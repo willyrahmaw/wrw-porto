@@ -102,7 +102,7 @@ class DatabaseSeeder extends Seeder
                 'meta_title' => 'Willy Rahmat Wijaya | Full-Stack Web Developer & UI Engineer',
                 'meta_description' => 'Membantu bisnis membangun website yang rapi, cepat, dan mudah dikelola dengan Laravel & Tailwind CSS.',
                 'meta_keywords' => 'Full-Stack Developer, Laravel Developer, Tailwind CSS, Jasa Pembuatan Website, Web Developer Indonesia, Pembuatan Web Portofolio',
-                'og_image' => null,
+                'og_image' => '/storage/og/og-image.webp',
                 'twitter_handle' => '@wrwstudio',
                 'robots_index' => true,
                 'google_verification' => null,
