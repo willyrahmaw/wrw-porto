@@ -143,18 +143,25 @@ class ExampleTest extends TestCase
         $this->actingAs($user)->patch("/admin/testimonials/{$createdTesti->id}/toggle-approval")->assertRedirect();
         $this->assertTrue($createdTesti->fresh()->is_approved);
 
-        // Testimonial section dynamic visibility: hidden when empty
+        // Testimonials dynamic visibility:
+        // When testimonials are empty but clients exist, client marquee is visible, but slider is hidden
         \Illuminate\Support\Facades\Cache::forget('portfolio.home_data');
         \App\Models\Testimonial::query()->update(['is_approved' => false]);
-        $emptyHome = $this->get('/');
-        $emptyHome->assertDontSee('id="clients"', false);
-        $emptyHome->assertDontSee('href="' . route('home') . '#clients"', false);
+        $clientOnlyHome = $this->get('/');
+        $clientOnlyHome->assertSee('id="clients"', false);
+        $clientOnlyHome->assertDontSee('ULASAN KLIEN //', false);
 
-        // Visible when at least one testimonial is approved
+        // When both clients and testimonials are empty, section is completely hidden
+        \App\Models\Client::query()->delete();
         \Illuminate\Support\Facades\Cache::forget('portfolio.home_data');
+        $completelyEmptyHome = $this->get('/');
+        $completelyEmptyHome->assertDontSee('id="clients"', false);
+
+        // When testimonials are approved, testimonials slider is rendered
         $createdTesti->update(['is_approved' => true]);
+        \Illuminate\Support\Facades\Cache::forget('portfolio.home_data');
         $activeHome = $this->get('/');
         $activeHome->assertSee('id="clients"', false);
-        $activeHome->assertSee('href="' . route('home') . '#clients"', false);
+        $activeHome->assertSee('ULASAN KLIEN //', false);
     }
 }
