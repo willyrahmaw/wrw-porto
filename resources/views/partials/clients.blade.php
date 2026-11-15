@@ -39,64 +39,64 @@
         x-data="{
             currentIndex: 0,
             total: {{ $testimonials->count() }},
-            perView: 3,
-            touchStartX: 0,
-            touchEndX: 0,
             isPaused: false,
+            autoplayTimer: null,
             init() {
-                this.updatePerView();
-                window.addEventListener('resize', () => this.updatePerView());
-                setInterval(() => {
-                    if (!this.isPaused && this.canSlide) {
+                this.updateScrollState();
+                window.addEventListener('resize', () => this.updateScrollState());
+                this.startAutoplay();
+            },
+            startAutoplay() {
+                if (this.total <= 1) return;
+                this.autoplayTimer = setInterval(() => {
+                    if (!this.isPaused) {
                         this.next();
                     }
                 }, 6500);
             },
-            updatePerView() {
-                if (window.innerWidth < 768) {
-                    this.perView = 1;
-                } else if (window.innerWidth < 1024) {
-                    this.perView = 2;
-                } else {
-                    this.perView = 3;
-                }
-                if (this.currentIndex > this.maxIndex) {
-                    this.currentIndex = this.maxIndex;
-                }
-            },
-            get maxIndex() {
-                return Math.max(0, this.total - this.perView);
-            },
-            get canSlide() {
-                return this.total > this.perView;
+            updateScrollState() {
+                const el = this.$refs.slider;
+                if (!el) return;
+                const card = el.firstElementChild;
+                const cardWidth = card ? card.offsetWidth : 1;
+                this.currentIndex = Math.min(this.total - 1, Math.max(0, Math.round(el.scrollLeft / cardWidth)));
             },
             next() {
-                if (!this.canSlide) return;
-                this.currentIndex = (this.currentIndex >= this.maxIndex) ? 0 : this.currentIndex + 1;
+                const el = this.$refs.slider;
+                if (!el) return;
+                const card = el.firstElementChild;
+                if (!card) return;
+                const cardWidth = card.offsetWidth;
+                const maxScroll = el.scrollWidth - el.clientWidth;
+                if (el.scrollLeft >= maxScroll - 15) {
+                    el.scrollTo({ left: 0, behavior: 'smooth' });
+                } else {
+                    el.scrollBy({ left: cardWidth, behavior: 'smooth' });
+                }
             },
             prev() {
-                if (!this.canSlide) return;
-                this.currentIndex = (this.currentIndex <= 0) ? this.maxIndex : this.currentIndex - 1;
-            },
-            goTo(idx) {
-                this.currentIndex = Math.min(Math.max(0, idx), this.maxIndex);
-            },
-            handleTouchStart(e) {
-                this.touchStartX = e.touches[0].clientX;
-            },
-            handleTouchEnd(e) {
-                this.touchEndX = e.changedTouches[0].clientX;
-                const diff = this.touchStartX - this.touchEndX;
-                if (Math.abs(diff) > 35) {
-                    if (diff > 0) this.next();
-                    else this.prev();
+                const el = this.$refs.slider;
+                if (!el) return;
+                const card = el.firstElementChild;
+                if (!card) return;
+                const cardWidth = card.offsetWidth;
+                if (el.scrollLeft <= 15) {
+                    const maxScroll = el.scrollWidth - el.clientWidth;
+                    el.scrollTo({ left: maxScroll, behavior: 'smooth' });
+                } else {
+                    el.scrollBy({ left: -cardWidth, behavior: 'smooth' });
                 }
+            },
+            scrollToIndex(idx) {
+                const el = this.$refs.slider;
+                if (!el) return;
+                const card = el.firstElementChild;
+                if (!card) return;
+                el.scrollTo({ left: idx * card.offsetWidth, behavior: 'smooth' });
             }
         }"
         @keydown.left.window="prev()"
         @keydown.right.window="next()"
-        @touchstart.passive="handleTouchStart($event)"
-        @touchend.passive="handleTouchEnd($event)"
     >
         @if($testimonials->count() > 0)
             {{-- Slider Top Control Bar --}}
@@ -105,22 +105,13 @@
                     <span class="w-2 h-2 rounded-full bg-accent animate-pulse"></span>
                     <span class="text-xs font-mono uppercase tracking-[0.2em] text-accent">
                         ULASAN KLIEN //
-                        <template x-if="perView > 1">
-                            <span>
-                                <span x-text="String(currentIndex + 1).padStart(2, '0')">01</span>
-                                <span>—</span>
-                                <span x-text="String(Math.min(currentIndex + perView, total)).padStart(2, '0')">03</span>
-                            </span>
-                        </template>
-                        <template x-if="perView === 1">
-                            <span x-text="String(currentIndex + 1).padStart(2, '0')">01</span>
-                        </template>
+                        <span x-text="String(currentIndex + 1).padStart(2, '0')">01</span>
                         <span class="text-muted">/ {{ sprintf('%02d', $testimonials->count()) }}</span>
                     </span>
                 </div>
 
                 {{-- Previous / Next Controls --}}
-                <div class="flex items-center gap-2" x-show="canSlide" x-cloak>
+                <div class="flex items-center gap-2">
                     <button
                         type="button"
                         @click="prev()"
@@ -142,19 +133,20 @@
 
             {{-- Slider Viewport / Track --}}
             <div
-                class="overflow-hidden border border-light-border dark:border-dark-border"
+                class="border border-light-border dark:border-dark-border bg-light-surface/10 dark:bg-dark-card/20"
                 @mouseenter="isPaused = true"
                 @mouseleave="isPaused = false"
                 data-aos="fade-up"
                 data-aos-delay="100"
             >
                 <div
-                    class="flex transition-transform duration-500 ease-out-expo divide-x divide-light-border dark:divide-dark-border"
-                    :style="'transform: translateX(-' + (currentIndex * (100 / total)) + '%)'"
+                    x-ref="slider"
+                    @scroll.debounce.40ms="updateScrollState()"
+                    class="flex overflow-x-auto no-scrollbar scroll-smooth snap-x snap-mandatory divide-x divide-light-border dark:divide-dark-border"
                 >
                     @foreach($testimonials as $index => $testimonial)
                         <blockquote
-                            class="w-full md:w-1/2 lg:w-1/3 shrink-0 p-8 sm:p-9 md:p-10 flex flex-col justify-between bg-light-surface/20 dark:bg-dark-card/50 hover:bg-light-surface/60 dark:hover:bg-dark-surface transition-colors duration-300 select-none"
+                            class="w-full md:w-1/2 lg:w-1/3 shrink-0 snap-start p-7 sm:p-9 md:p-10 flex flex-col justify-between bg-light-surface/20 dark:bg-dark-card/50 hover:bg-light-surface/60 dark:hover:bg-dark-surface transition-colors duration-300 select-none"
                         >
                             <div>
                                 <div class="flex items-center justify-between text-xs font-mono uppercase tracking-widest text-accent mb-6 sm:mb-8">
@@ -177,19 +169,19 @@
                                         loading="lazy"
                                         width="48"
                                         height="48"
-                                        class="w-12 h-12 rounded-full object-cover grayscale contrast-125"
+                                        class="w-12 h-12 rounded-full object-cover grayscale contrast-125 shrink-0"
                                     >
                                 @else
-                                    <div class="w-12 h-12 rounded-full bg-accent text-dark flex items-center justify-center font-mono font-bold text-sm">
+                                    <div class="w-12 h-12 rounded-full bg-accent text-dark flex items-center justify-center font-mono font-bold text-sm shrink-0">
                                         {{ substr($testimonial->name, 0, 2) }}
                                     </div>
                                 @endif
 
-                                <div>
-                                    <div class="font-medium text-sm text-dark dark:text-offwhite">
+                                <div class="min-w-0">
+                                    <div class="font-medium text-sm text-dark dark:text-offwhite truncate">
                                         {{ $testimonial->name }}
                                     </div>
-                                    <div class="text-xs font-mono text-muted">
+                                    <div class="text-xs font-mono text-muted truncate">
                                         {{ $testimonial->role }}@if($testimonial->company), <span class="text-accent">{{ $testimonial->company }}</span>@endif
                                     </div>
                                 </div>
@@ -200,17 +192,17 @@
             </div>
 
             {{-- Slider Indicators & Navigation Hint --}}
-            <div class="mt-4 flex items-center justify-between" x-show="canSlide" x-cloak>
+            <div class="mt-4 flex items-center justify-between">
                 <div class="flex items-center gap-2">
-                    <template x-for="i in (maxIndex + 1)" :key="i">
+                    @foreach($testimonials as $index => $testimonial)
                         <button
                             type="button"
-                            @click="goTo(i - 1)"
+                            @click="scrollToIndex({{ $index }})"
                             class="h-1.5 transition-all duration-300 cursor-pointer"
-                            :class="currentIndex === (i - 1) ? 'w-8 bg-accent' : 'w-2 bg-light-border dark:border-dark-border bg-muted/40 hover:bg-muted'"
-                            :aria-label="'Pindah ke slide ' + i"
+                            :class="currentIndex === {{ $index }} ? 'w-8 bg-accent' : 'w-2 bg-light-border dark:border-dark-border bg-muted/40 hover:bg-muted'"
+                            aria-label="Pindah ke ulasan {{ $index + 1 }}"
                         ></button>
-                    </template>
+                    @endforeach
                 </div>
 
                 <span class="text-[11px] font-mono uppercase tracking-wider text-muted hidden sm:inline">

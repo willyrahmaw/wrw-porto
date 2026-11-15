@@ -81,3 +81,12 @@ body.loaded .reveal-line-inner {
 [x-cloak] {
     display: none !important;
 }
+
+/* Hide horizontal scrollbar for clean carousels */
+.no-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+.no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
