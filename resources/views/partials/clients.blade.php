@@ -72,18 +72,22 @@
             },
             next() {
                 if (!this.canSlide) return;
-                this.currentIndex = this.currentIndex >= this.maxIndex ? 0 : this.currentIndex + 1;
+                this.currentIndex = (this.currentIndex >= this.maxIndex) ? 0 : this.currentIndex + 1;
             },
             prev() {
                 if (!this.canSlide) return;
-                this.currentIndex = this.currentIndex <= 0 ? this.maxIndex : this.currentIndex - 1;
+                this.currentIndex = (this.currentIndex <= 0) ? this.maxIndex : this.currentIndex - 1;
             },
             goTo(idx) {
                 this.currentIndex = Math.min(Math.max(0, idx), this.maxIndex);
             },
-            handleSwipe() {
+            handleTouchStart(e) {
+                this.touchStartX = e.touches[0].clientX;
+            },
+            handleTouchEnd(e) {
+                this.touchEndX = e.changedTouches[0].clientX;
                 const diff = this.touchStartX - this.touchEndX;
-                if (Math.abs(diff) > 40) {
+                if (Math.abs(diff) > 35) {
                     if (diff > 0) this.next();
                     else this.prev();
                 }
@@ -91,8 +95,8 @@
         }"
         @keydown.left.window="prev()"
         @keydown.right.window="next()"
-        @touchstart.passive="touchStartX = $event.touches[0].clientX"
-        @touchend.passive="touchEndX = $event.changedTouches[0].clientX; handleSwipe()"
+        @touchstart.passive="handleTouchStart($event)"
+        @touchend.passive="handleTouchEnd($event)"
     >
         @if($testimonials->count() > 0)
             {{-- Slider Top Control Bar --}}
@@ -100,8 +104,17 @@
                 <div class="flex items-center gap-3">
                     <span class="w-2 h-2 rounded-full bg-accent animate-pulse"></span>
                     <span class="text-xs font-mono uppercase tracking-[0.2em] text-accent">
-                        TESTIMONI KLIEN //
-                        <span x-text="String(currentIndex + 1).padStart(2, '0')">01</span>
+                        ULASAN KLIEN //
+                        <template x-if="perView > 1">
+                            <span>
+                                <span x-text="String(currentIndex + 1).padStart(2, '0')">01</span>
+                                <span>—</span>
+                                <span x-text="String(Math.min(currentIndex + perView, total)).padStart(2, '0')">03</span>
+                            </span>
+                        </template>
+                        <template x-if="perView === 1">
+                            <span x-text="String(currentIndex + 1).padStart(2, '0')">01</span>
+                        </template>
                         <span class="text-muted">/ {{ sprintf('%02d', $testimonials->count()) }}</span>
                     </span>
                 </div>
@@ -137,16 +150,11 @@
             >
                 <div
                     class="flex transition-transform duration-500 ease-out-expo divide-x divide-light-border dark:divide-dark-border"
-                    :style="'transform: translateX(-' + (currentIndex * (100 / perView)) + '%)'"
+                    :style="'transform: translateX(-' + (currentIndex * (100 / total)) + '%)'"
                 >
                     @foreach($testimonials as $index => $testimonial)
                         <blockquote
-                            class="shrink-0 p-8 sm:p-9 md:p-10 flex flex-col justify-between bg-light-surface/20 dark:bg-dark-card/50 hover:bg-light-surface/60 dark:hover:bg-dark-surface transition-colors duration-300 select-none"
-                            :class="{
-                                'w-full': perView === 1,
-                                'w-1/2': perView === 2,
-                                'w-1/3': perView === 3
-                            }"
+                            class="w-full md:w-1/2 lg:w-1/3 shrink-0 p-8 sm:p-9 md:p-10 flex flex-col justify-between bg-light-surface/20 dark:bg-dark-card/50 hover:bg-light-surface/60 dark:hover:bg-dark-surface transition-colors duration-300 select-none"
                         >
                             <div>
                                 <div class="flex items-center justify-between text-xs font-mono uppercase tracking-widest text-accent mb-6 sm:mb-8">
