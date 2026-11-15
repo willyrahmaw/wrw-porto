@@ -142,5 +142,19 @@ class ExampleTest extends TestCase
         $createdTesti = \App\Models\Testimonial::where('name', 'Doni Kusuma')->first();
         $this->actingAs($user)->patch("/admin/testimonials/{$createdTesti->id}/toggle-approval")->assertRedirect();
         $this->assertTrue($createdTesti->fresh()->is_approved);
+
+        // Testimonial section dynamic visibility: hidden when empty
+        \Illuminate\Support\Facades\Cache::forget('portfolio.home_data');
+        \App\Models\Testimonial::query()->update(['is_approved' => false]);
+        $emptyHome = $this->get('/');
+        $emptyHome->assertDontSee('id="clients"', false);
+        $emptyHome->assertDontSee('href="' . route('home') . '#clients"', false);
+
+        // Visible when at least one testimonial is approved
+        \Illuminate\Support\Facades\Cache::forget('portfolio.home_data');
+        $createdTesti->update(['is_approved' => true]);
+        $activeHome = $this->get('/');
+        $activeHome->assertSee('id="clients"', false);
+        $activeHome->assertSee('href="' . route('home') . '#clients"', false);
     }
 }

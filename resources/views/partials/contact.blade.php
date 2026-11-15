@@ -20,7 +20,7 @@
     <div class="max-w-[1440px] mx-auto px-4 sm:px-6 md:px-12">
 
         <x-section-title
-            number="05"
+            :number="($hasTestimonials ?? false) ? '05' : '04'"
             label="Hubungi Saya"
             title="Punya kebutuhan website? <span class='italic font-normal text-accent'>Mari diskusikan.</span>"
             subtitle="Ceritakan kebutuhan website baru, penambahan fitur, atau perbaikan sistem Anda. Biasanya membalas dalam 24 jam."

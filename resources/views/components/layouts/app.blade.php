@@ -4,6 +4,7 @@
     'image' => null,
     'type' => 'website',
     'profile' => null,
+    'hasTestimonials' => false,
 ])
 
 @php
@@ -96,7 +97,7 @@
     </a>
 
     {{-- Navbar --}}
-    @includeIf('partials.navbar', ['profile' => $profile])
+    @includeIf('partials.navbar', ['profile' => $profile, 'hasTestimonials' => $hasTestimonials])
 
     {{-- Main Page Content --}}
     <main id="main-content" class="flex-grow relative z-10">
@@ -104,7 +105,7 @@
     </main>
 
     {{-- Footer --}}
-    @includeIf('partials.footer', ['profile' => $profile])
+    @includeIf('partials.footer', ['profile' => $profile, 'hasTestimonials' => $hasTestimonials])
 
 </body>
 </html>

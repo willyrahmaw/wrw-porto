@@ -22,6 +22,9 @@
                 <a href="{{ route('home') }}#about" class="hover:text-accent transition-colors">Tentang</a>
                 <a href="{{ route('home') }}#services" class="hover:text-accent transition-colors">Layanan</a>
                 <a href="{{ route('projects.index') }}" class="hover:text-accent transition-colors">Proyek</a>
+                @if($hasTestimonials ?? false)
+                    <a href="{{ route('home') }}#clients" class="hover:text-accent transition-colors">Klien</a>
+                @endif
                 <a href="{{ route('home') }}#contact" class="hover:text-accent transition-colors">Kontak</a>
 
                 <span class="text-light-border dark:text-dark-border hidden sm:inline">|</span>

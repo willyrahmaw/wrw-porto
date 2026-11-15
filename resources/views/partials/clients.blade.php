@@ -1,3 +1,4 @@
+@if(isset($testimonials) && $testimonials->count() > 0)
 <section id="clients" class="py-20 sm:py-24 md:py-36 border-b border-light-border dark:border-dark-border overflow-hidden">
     <div class="max-w-[1440px] mx-auto px-4 sm:px-6 md:px-12">
 
@@ -209,10 +210,6 @@
                     Gunakan panah ← → atau geser layar untuk berpindah
                 </span>
             </div>
-        @else
-            <div class="p-8 border border-dashed border-light-border dark:border-dark-border text-center">
-                <p class="font-mono text-xs uppercase tracking-widest text-muted">Belum ada testimoni yang dipublikasikan.</p>
-            </div>
         @endif
 
         {{-- Public Testimonial Invite Callout --}}
@@ -230,3 +227,4 @@
         </div>
     </div>
 </section>
+@endif

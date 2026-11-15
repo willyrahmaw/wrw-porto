@@ -1,11 +1,12 @@
 @php
-    $navLinks = [
+    $hasTestimonials = $hasTestimonials ?? false;
+    $navLinks = array_values(array_filter([
         ['label' => 'About', 'href' => route('home') . '#about', 'num' => '01'],
         ['label' => 'Services', 'href' => route('home') . '#services', 'num' => '02'],
         ['label' => 'Projects', 'href' => route('home') . '#projects', 'num' => '03'],
-        ['label' => 'Clients', 'href' => route('home') . '#clients', 'num' => '04'],
-        ['label' => 'Contact', 'href' => route('home') . '#contact', 'num' => '05'],
-    ];
+        $hasTestimonials ? ['label' => 'Clients', 'href' => route('home') . '#clients', 'num' => '04'] : null,
+        ['label' => 'Contact', 'href' => route('home') . '#contact', 'num' => $hasTestimonials ? '05' : '04'],
+    ]));
 @endphp
 
 <header
