@@ -47,12 +47,15 @@
 
 {{-- Google Analytics 4 (GA4) Tracking --}}
 @if(!empty($seo['google_analytics_id']))
-<script async src="https://www.googletagmanager.com/gtag/js?id={{ $seo['google_analytics_id'] }}"></script>
+@php
+    $gaId = (string) $seo['google_analytics_id'];
+@endphp
+<script async src="https://www.googletagmanager.com/gtag/js?id={{ $gaId }}"></script>
 <script>
     window.dataLayer = window.dataLayer || [];
     function gtag(){dataLayer.push(arguments);}
     gtag('js', new Date());
-    gtag('config', '{{ $seo['google_analytics_id'] }}');
+    gtag('config', "{{ $gaId }}");
 </script>
 @endif
 
