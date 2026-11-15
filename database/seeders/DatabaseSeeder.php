@@ -296,6 +296,36 @@ class DatabaseSeeder extends Seeder
                 'is_approved' => true,
                 'sort_order' => 3,
             ],
+            [
+                'name' => 'Farhan Maulana',
+                'role' => 'Founder & Roaster',
+                'company' => 'Kopi Nusantara Roastery',
+                'avatar' => 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=300&q=80',
+                'quote' => 'Website katalog dan checkout pesanan WhatsApp yang dibuat Mas Willy sangat membantu penjualan roastery kami. Pelanggan bisa order sendiri dengan mudah tanpa perlu chat manual berkali-kali.',
+                'rating' => 5,
+                'is_approved' => true,
+                'sort_order' => 4,
+            ],
+            [
+                'name' => 'Siti Nurhaliza',
+                'role' => 'Ketua Panitia Pelaksana',
+                'company' => 'Semnas Edukasi Digital',
+                'avatar' => 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80',
+                'quote' => 'Sistem cetak e-sertifikat otomatisnya luar biasa efisien. Ribuan peserta seminar bisa unduh sertifikat ber-QR Code sendiri dalam hitungan menit setelah acara usai. Panitia sangat terbantu!',
+                'rating' => 5,
+                'is_approved' => true,
+                'sort_order' => 5,
+            ],
+            [
+                'name' => 'Dimas Prasetyo',
+                'role' => 'Chief Editor',
+                'company' => 'Portal Warta Terkini',
+                'avatar' => 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=300&q=80',
+                'quote' => 'Kecepatan portal berita kami naik drastis setelah dioptimasi caching dan indexing database oleh Willy. Server tetap stabil dan enteng meski ada lonjakan pengunjung saat berita breaking news.',
+                'rating' => 5,
+                'is_approved' => true,
+                'sort_order' => 6,
+            ],
         ];
 
         foreach ($testimonials as $testimonial) {

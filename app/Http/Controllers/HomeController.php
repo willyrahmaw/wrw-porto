@@ -37,7 +37,7 @@ class HomeController extends Controller
                 'projects' => $projects,
                 'categories' => $projects->pluck('category')->unique()->values(),
                 'clients' => Client::query()->orderBy('sort_order')->get(),
-                'testimonials' => Testimonial::query()->where('is_approved', true)->orderBy('sort_order')->limit(6)->get(),
+                'testimonials' => Testimonial::query()->where('is_approved', true)->orderBy('sort_order')->limit(20)->get(),
             ];
         });
 
