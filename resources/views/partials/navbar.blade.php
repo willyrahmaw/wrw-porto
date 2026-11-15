@@ -15,39 +15,41 @@
         scrolled: false,
         init() {
             window.addEventListener('scroll', () => {
-                this.scrolled = window.scrollY > 30;
-            });
+                this.scrolled = window.scrollY > 20;
+            }, { passive: true });
         }
     }"
-    :class="scrolled ? 'bg-light/85 dark:bg-dark/85 backdrop-blur-md border-b border-light-border dark:border-dark-border py-4' : 'bg-transparent py-6'"
-    class="fixed top-0 inset-x-0 z-40 transition-all duration-500 ease-out-expo"
+    :class="scrolled
+        ? 'bg-light/85 dark:bg-dark/85 backdrop-blur-md border-b border-light-border dark:border-dark-border py-3.5 sm:py-4 shadow-xs'
+        : 'bg-transparent py-5 sm:py-6'"
+    class="fixed top-0 inset-x-0 z-40 transition-all duration-300 ease-out-expo"
 >
     <div class="max-w-[1440px] mx-auto px-4 sm:px-6 md:px-12 flex items-center justify-between">
-        {{-- Left: Initials / Brand Logo & Local Time --}}
-        <div class="flex items-center gap-6">
+
+        {{-- Left: Initials / Brand Mark & Availability Pill --}}
+        <div class="flex items-center gap-3 sm:gap-4">
             <a
                 href="{{ route('home') }}"
-                class="font-display italic text-2xl md:text-3xl tracking-tight text-dark dark:text-offwhite hover:text-accent dark:hover:text-accent transition-colors"
-                aria-label="Beranda {{ $profile?->name }}"
+                class="font-display italic text-2xl sm:text-3xl tracking-tight text-dark dark:text-offwhite hover:text-accent dark:hover:text-accent transition-colors leading-none"
+                aria-label="Beranda {{ $profile?->name ?? 'Portofolio' }}"
             >
                 {{ $profile?->initials ?? 'WRW.' }}
             </a>
 
-            <div class="hidden lg:flex items-center gap-2 pl-6 border-l border-light-border dark:border-dark-border text-[11px] font-mono uppercase tracking-[0.2em] text-muted">
-                <span>{{ $profile?->location ?? 'Jakarta, ID' }}</span>
-                <span class="text-accent">•</span>
-                <span class="local-clock text-dark dark:text-offwhite">--:--:-- WIB</span>
+            <div class="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-light-border dark:border-dark-border text-[10px] font-mono uppercase tracking-widest text-muted bg-light-surface/40 dark:bg-dark-surface/40">
+                <span class="w-1.5 h-1.5 rounded-full {{ $profile?->is_available ? 'bg-accent animate-pulse' : 'bg-accent-orange' }}"></span>
+                <span>{{ $profile?->is_available ? 'Available' : 'Booked' }}</span>
             </div>
         </div>
 
         {{-- Center: Anchor Navigation (Desktop) --}}
-        <nav class="hidden md:flex items-center gap-8" aria-label="Navigasi Utama">
+        <nav class="hidden md:flex items-center gap-7 lg:gap-9" aria-label="Navigasi Utama">
             @foreach($navLinks as $link)
                 <a
                     href="{{ $link['href'] }}"
                     class="group relative py-1 text-xs font-mono uppercase tracking-[0.18em] text-muted hover:text-dark dark:hover:text-offwhite transition-colors"
                 >
-                    <span class="text-[10px] text-accent/80 mr-1">{{ $link['num'] }}</span>
+                    <span class="text-[10px] text-accent/80 mr-1 font-semibold">{{ $link['num'] }}</span>
                     <span>{{ $link['label'] }}</span>
                     <span class="absolute bottom-0 left-0 w-0 h-px bg-accent transition-all duration-300 group-hover:w-full"></span>
                 </a>
@@ -55,12 +57,13 @@
         </nav>
 
         {{-- Right: Theme Toggle + CTA + Mobile Trigger --}}
-        <div class="flex items-center gap-3 md:gap-4">
+        <div class="flex items-center gap-3 sm:gap-4">
+
             {{-- Dark / Light Mode Toggle --}}
             <button
                 type="button"
                 @click="toggleTheme()"
-                class="w-10 h-10 flex items-center justify-center border border-light-border dark:border-dark-border text-dark dark:text-offwhite hover:border-accent dark:hover:border-accent hover:text-accent transition-colors cursor-pointer"
+                class="w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center border border-light-border dark:border-dark-border text-dark dark:text-offwhite hover:border-accent dark:hover:border-accent hover:text-accent transition-colors cursor-pointer"
                 :aria-label="darkMode ? 'Ganti ke Light Mode' : 'Ganti ke Dark Mode'"
             >
                 {{-- Sun Icon (shows when dark) --}}
@@ -76,19 +79,17 @@
             {{-- Let's Talk CTA (Desktop) --}}
             <a
                 href="{{ route('home') }}#contact"
-                class="magnetic-btn hidden sm:inline-flex items-center gap-2.5 px-5 py-2.5 bg-accent text-dark text-xs font-mono uppercase tracking-[0.18em] font-semibold hover:bg-accent-hover transition-all duration-300"
+                class="magnetic-btn hidden sm:inline-flex items-center gap-2 px-4 sm:px-5 py-2 sm:py-2.5 bg-accent text-dark text-xs font-mono uppercase tracking-[0.16em] font-semibold hover:bg-accent-hover transition-all duration-300"
             >
                 <span>Let's Talk</span>
-                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 19.5l15-15m0 0H8.25m11.25 0v11.25" />
-                </svg>
+                <span class="text-xs">&rarr;</span>
             </a>
 
             {{-- Mobile Hamburger Button --}}
             <button
                 type="button"
                 @click="mobileMenuOpen = !mobileMenuOpen"
-                class="md:hidden w-10 h-10 flex flex-col items-center justify-center gap-1.5 border border-light-border dark:border-dark-border text-dark dark:text-offwhite"
+                class="md:hidden w-9 h-9 flex flex-col items-center justify-center gap-1.5 border border-light-border dark:border-dark-border text-dark dark:text-offwhite cursor-pointer"
                 :aria-expanded="mobileMenuOpen"
                 aria-label="Buka Menu Navigasi"
             >
@@ -108,7 +109,7 @@
         x-transition:leave="transition ease-awwwards duration-400"
         x-transition:leave-start="opacity-100 translate-y-0"
         x-transition:leave-end="opacity-0 -translate-y-full"
-        class="fixed inset-0 top-[72px] h-[calc(100vh-72px)] bg-light dark:bg-dark z-50 flex flex-col justify-between p-6 md:hidden border-t border-light-border dark:border-dark-border"
+        class="fixed inset-0 top-[60px] sm:top-[68px] h-[calc(100vh-60px)] sm:h-[calc(100vh-68px)] bg-light dark:bg-dark z-50 flex flex-col justify-between p-6 md:hidden border-t border-light-border dark:border-dark-border"
     >
         <nav class="flex flex-col divide-y divide-light-border dark:divide-dark-border">
             @foreach($navLinks as $link)
@@ -117,7 +118,7 @@
                     @click="mobileMenuOpen = false"
                     class="py-5 flex items-baseline justify-between group"
                 >
-                    <span class="font-display italic text-4xl text-dark dark:text-offwhite group-hover:text-accent transition-colors">
+                    <span class="font-display italic text-3xl sm:text-4xl text-dark dark:text-offwhite group-hover:text-accent transition-colors">
                         {{ $link['label'] }}
                     </span>
                     <span class="font-mono text-xs text-accent tracking-widest">/ {{ $link['num'] }}</span>
@@ -127,17 +128,19 @@
 
         <div class="pt-6 border-t border-light-border dark:border-dark-border flex flex-col gap-4">
             <div class="flex items-center justify-between text-xs font-mono uppercase tracking-widest text-muted">
-                <span>{{ $profile?->location }}</span>
-                <span class="local-clock text-dark dark:text-offwhite">--:--:-- WIB</span>
+                <span>STATUS:</span>
+                <span class="inline-flex items-center gap-1.5 text-accent font-semibold">
+                    <span class="w-1.5 h-1.5 rounded-full {{ $profile?->is_available ? 'bg-accent animate-pulse' : 'bg-accent-orange' }}"></span>
+                    <span>{{ $profile?->is_available ? 'Open for Projects' : 'Slot Penuh' }}</span>
+                </span>
             </div>
             <a
                 href="{{ route('home') }}#contact"
                 @click="mobileMenuOpen = false"
-                class="w-full py-4 bg-accent text-dark text-center font-mono text-xs uppercase tracking-[0.2em] font-semibold"
+                class="w-full py-3.5 bg-accent text-dark text-center font-mono text-xs uppercase tracking-[0.2em] font-semibold hover:bg-accent-hover transition-colors"
             >
-                Let's Talk — Mulai Proyek
+                Let's Talk — Mulai Proyek &rarr;
             </a>
         </div>
     </div>
 </header>
-
