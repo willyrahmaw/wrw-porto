@@ -76,6 +76,9 @@ Route::prefix('admin')->name('admin.')->group(function () {
         // Admin Account Security
         Route::put('/security', [DashboardController::class, 'updatePassword'])->name('security.update');
 
+        // SEO & Meta Configuration
+        Route::put('/seo', [DashboardController::class, 'updateSeo'])->name('seo.update');
+
         // IP Blacklist & Firewall Management (Manual Ban & Unban/Delete)
         Route::post('/banned-ips', [DashboardController::class, 'manualBanIp'])->name('banned-ips.store');
         Route::delete('/banned-ips/{ipBan}', [DashboardController::class, 'unbanIp'])->whereNumber('ipBan')->name('banned-ips.destroy');

@@ -7,10 +7,13 @@
 ])
 
 @php
+    $seo = $profile?->seo ?? [];
     $siteName = $profile?->name ?? config('app.name', 'Willy — Creative Engineer');
-    $metaTitle = $title ? "{$title} — {$siteName}" : "{$siteName} | {$profile?->profession}";
-    $metaDesc = $description ?? $profile?->tagline ?? 'Building digital products and high-impact web experiences with precision, performance, and editorial craft.';
-    $metaImage = $image ? asset($image) : asset('images/og-default.jpg');
+    $defaultTitle = !empty($seo['meta_title']) ? $seo['meta_title'] : "{$siteName} | {$profile?->profession}";
+    $metaTitle = $title ? "{$title} — {$siteName}" : $defaultTitle;
+    $metaDesc = $description ?? ($seo['meta_description'] ?? $profile?->tagline ?? 'Building digital products and high-impact web experiences with precision, performance, and editorial craft.');
+    $defaultOgImage = !empty($seo['og_image']) ? asset($seo['og_image']) : asset('images/og-default.jpg');
+    $metaImage = $image ? asset($image) : $defaultOgImage;
     $canonical = url()->current();
 @endphp
 
@@ -38,6 +41,7 @@
         :type="$type"
         :canonical="$canonical"
         :profile="$profile"
+        :seo="$seo"
     />
 
     {{-- Vite Assets + Bunny Fonts --}}

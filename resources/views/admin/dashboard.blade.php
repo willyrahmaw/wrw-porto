@@ -60,8 +60,9 @@
                             ['id' => 'services', 'num' => '03', 'label' => 'Services & Capabilities', 'badge' => $services->count()],
                             ['id' => 'clients', 'num' => '04', 'label' => 'Clients & Testimonials', 'badge' => $clients->count()],
                             ['id' => 'profile', 'num' => '05', 'label' => 'Profile, Bio & CV', 'badge' => null],
-                            ['id' => 'security', 'num' => '06', 'label' => 'Admin Security', 'badge' => null],
-                            ['id' => 'firewall', 'num' => '07', 'label' => 'Firewall & IP Blacklist', 'badge' => $bannedIps->filter->isActive()->count() ?: null],
+                            ['id' => 'seo', 'num' => '06', 'label' => 'SEO & Meta Config', 'badge' => null],
+                            ['id' => 'security', 'num' => '07', 'label' => 'Admin Security', 'badge' => null],
+                            ['id' => 'firewall', 'num' => '08', 'label' => 'Firewall & IP Blacklist', 'badge' => $bannedIps->filter->isActive()->count() ?: null],
                         ];
                     @endphp
 
@@ -321,6 +322,24 @@
 
                             <button type="button" @click="activeTab = 'profile'" class="px-5 py-3 border border-light-border dark:border-dark-border font-mono text-xs uppercase tracking-widest text-muted hover:text-dark dark:hover:text-offwhite hover:border-accent cursor-pointer">
                                 Edit Teks Status →
+                            </button>
+                        </div>
+
+                        {{-- Quick SEO Status Banner --}}
+                        <div class="mt-6 pt-6 border-t border-light-border dark:border-dark-border flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <span class="w-2 h-2 rounded-full {{ ($profile?->seo['robots_index'] ?? true) ? 'bg-accent animate-pulse' : 'bg-accent-orange' }}"></span>
+                                <div>
+                                    <div class="text-xs font-mono font-medium text-dark dark:text-offwhite">
+                                        SEO Google: {{ ($profile?->seo['robots_index'] ?? true) ? 'Terbuka (index, follow)' : 'Terkunci (noindex)' }}
+                                    </div>
+                                    <div class="text-[11px] font-mono text-muted">
+                                        Title: {{ Str::limit($profile?->seo['meta_title'] ?? ($profile?->name . ' | ' . $profile?->profession), 38) }}
+                                    </div>
+                                </div>
+                            </div>
+                            <button type="button" @click="activeTab = 'seo'" class="text-xs font-mono uppercase tracking-widest text-accent hover:underline cursor-pointer">
+                                Kelola SEO →
                             </button>
                         </div>
                     </div>
@@ -1173,11 +1192,341 @@
             </div>
 
             {{-- ============================================================= --}}
-            {{-- TAB 06: ADMIN SECURITY                                        --}}
+            {{-- TAB 06: SEO & METADATA CONFIGURATION                          --}}
+            {{-- ============================================================= --}}
+            @php
+                $seoData = $profile?->seo ?? [];
+                $currentTitle = $seoData['meta_title'] ?? ($profile?->name . ' | ' . $profile?->profession);
+                $currentDesc = $seoData['meta_description'] ?? ($profile?->tagline ?? '');
+                $currentKeywords = $seoData['meta_keywords'] ?? 'Full-Stack Developer, Laravel, Tailwind CSS';
+                $currentOgImage = $seoData['og_image'] ?? null;
+                $currentTwitter = $seoData['twitter_handle'] ?? '@wrwstudio';
+                $currentRobots = $seoData['robots_index'] ?? true;
+                $currentGoogleVerif = $seoData['google_verification'] ?? '';
+                $currentBingVerif = $seoData['bing_verification'] ?? '';
+                $currentGA = $seoData['google_analytics_id'] ?? '';
+                $currentSchema = $seoData['schema_type'] ?? 'Person';
+            @endphp
+            <div
+                x-show="activeTab === 'seo'"
+                x-cloak
+                class="max-w-5xl space-y-8"
+                x-data="{
+                    title: {{ Js::from($currentTitle) }},
+                    desc: {{ Js::from($currentDesc) }},
+                    robotsIndex: {{ $currentRobots ? 'true' : 'false' }},
+                    schemaType: {{ Js::from($currentSchema) }}
+                }"
+            >
+                <div class="pb-4 border-b border-light-border dark:border-dark-border flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div>
+                        <span class="text-xs font-mono uppercase tracking-widest text-accent">06 // SEARCH ENGINE OPTIMIZATION</span>
+                        <h2 class="font-display italic text-3xl mt-1">SEO, Open Graph &amp; Webmaster</h2>
+                        <p class="text-xs text-muted mt-1">
+                            Kelola judul meta, pratinjau mesin pencari Google, kartu sosial media WhatsApp/Twitter, sitemap, dan verifikasi webmaster.
+                        </p>
+                    </div>
+
+                    {{-- Quick Diagnostics Links --}}
+                    <div class="flex items-center gap-2">
+                        <a
+                            href="{{ route('sitemap') }}"
+                            target="_blank"
+                            class="px-3 py-1.5 border border-light-border dark:border-dark-border text-xs font-mono uppercase tracking-wider hover:border-accent hover:text-accent transition-colors flex items-center gap-1.5"
+                        >
+                            <span>sitemap.xml</span>
+                            <span>↗</span>
+                        </a>
+                        <a
+                            href="{{ url('/robots.txt') }}"
+                            target="_blank"
+                            class="px-3 py-1.5 border border-light-border dark:border-dark-border text-xs font-mono uppercase tracking-wider hover:border-accent hover:text-accent transition-colors flex items-center gap-1.5"
+                        >
+                            <span>robots.txt</span>
+                            <span>↗</span>
+                        </a>
+                    </div>
+                </div>
+
+                {{-- Interactive Live SERP Preview --}}
+                <div class="p-6 md:p-8 border border-light-border dark:border-dark-border bg-light-surface/40 dark:bg-dark-card space-y-4">
+                    <div class="flex items-center justify-between border-b border-light-border dark:border-dark-border pb-3">
+                        <span class="text-xs font-mono uppercase tracking-widest text-accent flex items-center gap-2">
+                            <span class="w-2 h-2 rounded-full bg-accent animate-pulse"></span>
+                            Live Pratinjau Google Search (SERP)
+                        </span>
+                        <span class="text-[10px] font-mono text-muted uppercase">Desktop &amp; Mobile Preview</span>
+                    </div>
+
+                    {{-- Google Card Simulation --}}
+                    <div class="p-4 sm:p-5 border border-light-border dark:border-dark-border bg-light dark:bg-dark/80 max-w-2xl font-sans space-y-1.5 shadow-sm">
+                        <div class="flex items-center gap-2.5">
+                            <div class="w-6 h-6 rounded-full bg-accent/20 border border-accent/40 flex items-center justify-center text-[10px] font-mono font-bold text-accent">
+                                {{ substr($profile?->initials ?? 'W', 0, 1) }}
+                            </div>
+                            <div class="text-xs font-sans text-dark/70 dark:text-offwhite/70 truncate">
+                                {{ url('/') }}
+                                <span class="text-muted text-[11px]"> › beranda</span>
+                            </div>
+                        </div>
+
+                        <h4
+                            class="text-base sm:text-lg text-[#1a0dab] dark:text-[#8ab4f8] hover:underline cursor-pointer font-medium leading-snug line-clamp-1"
+                            x-text="title || 'Judul Meta Website Anda'"
+                        ></h4>
+
+                        <p
+                            class="text-xs sm:text-sm text-dark/80 dark:text-offwhite/80 leading-relaxed line-clamp-2"
+                            x-text="desc || 'Deskripsi singkat website Anda yang akan dibaca oleh calon klien di mesin pencari Google...'"
+                        ></p>
+                    </div>
+                </div>
+
+                {{-- Main SEO Settings Form --}}
+                <form
+                    method="POST"
+                    action="{{ route('admin.seo.update') }}"
+                    enctype="multipart/form-data"
+                    class="space-y-8"
+                >
+                    @csrf
+                    @method('PUT')
+
+                    {{-- Group 1: Meta Tags --}}
+                    <div class="p-6 md:p-8 border border-light-border dark:border-dark-border bg-light-surface/20 dark:bg-dark-card space-y-6">
+                        <h3 class="text-xs font-mono uppercase tracking-widest text-accent border-b border-light-border dark:border-dark-border pb-3">
+                            01 // Meta Tags Utama (Title, Description, Keywords)
+                        </h3>
+
+                        <div class="space-y-4">
+                            <div>
+                                <div class="flex items-center justify-between mb-2">
+                                    <label class="block text-xs font-mono uppercase text-muted">
+                                        Judul Meta Halaman (Meta Title) *
+                                    </label>
+                                    <span class="text-[11px] font-mono" :class="title.length > 60 ? 'text-accent-orange' : 'text-muted'">
+                                        <span x-text="title.length"></span> / 60 karakter disarankan
+                                    </span>
+                                </div>
+                                <input
+                                    type="text"
+                                    name="meta_title"
+                                    x-model="title"
+                                    required
+                                    maxlength="150"
+                                    class="w-full px-4 py-3 bg-light dark:bg-dark border border-light-border dark:border-dark-border font-mono text-sm"
+                                    placeholder="Nama Lengkap | Profesi / Tagline Utama"
+                                >
+                            </div>
+
+                            <div>
+                                <div class="flex items-center justify-between mb-2">
+                                    <label class="block text-xs font-mono uppercase text-muted">
+                                        Deskripsi Meta (Meta Description) *
+                                    </label>
+                                    <span class="text-[11px] font-mono" :class="desc.length > 160 ? 'text-accent-orange' : 'text-muted'">
+                                        <span x-text="desc.length"></span> / 160 karakter disarankan
+                                    </span>
+                                </div>
+                                <textarea
+                                    name="meta_description"
+                                    x-model="desc"
+                                    required
+                                    rows="3"
+                                    maxlength="300"
+                                    class="w-full px-4 py-3 bg-light dark:bg-dark border border-light-border dark:border-dark-border font-mono text-sm leading-relaxed"
+                                    placeholder="Rangkuman 1-2 kalimat mengenai value dan jasa yang Anda tawarkan..."
+                                ></textarea>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-mono uppercase text-muted mb-2">
+                                    Kata Kunci Pencarian (Meta Keywords - Pisahkan dengan koma)
+                                </label>
+                                <input
+                                    type="text"
+                                    name="meta_keywords"
+                                    value="{{ $currentKeywords }}"
+                                    class="w-full px-4 py-3 bg-light dark:bg-dark border border-light-border dark:border-dark-border font-mono text-sm"
+                                    placeholder="mis. Web Developer, Laravel Indonesia, Jasa Website, Frontend Engineer"
+                                >
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- Group 2: Social Media & Open Graph --}}
+                    <div class="p-6 md:p-8 border border-light-border dark:border-dark-border bg-light-surface/20 dark:bg-dark-card space-y-6">
+                        <h3 class="text-xs font-mono uppercase tracking-widest text-accent border-b border-light-border dark:border-dark-border pb-3">
+                            02 // Open Graph &amp; Social Card (WhatsApp, Telegram, Facebook, Twitter)
+                        </h3>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+                            <div class="space-y-4">
+                                <label class="block text-xs font-mono uppercase text-muted">
+                                    Unggah Gambar Banner Share (OG Image 1200x630px)
+                                </label>
+
+                                <input
+                                    type="file"
+                                    name="og_image_file"
+                                    accept="image/*"
+                                    class="block w-full text-xs font-mono text-muted file:mr-3 file:py-2 file:px-4 file:border-0 file:text-xs file:font-mono file:uppercase file:tracking-wider file:bg-dark dark:file:bg-offwhite file:text-offwhite dark:file:text-dark hover:file:bg-accent hover:file:text-dark cursor-pointer transition-colors"
+                                >
+                                <p class="text-[11px] font-mono text-muted">
+                                    Gambar ini muncul otomatis saat link website Anda dibagikan ke WhatsApp, Telegram, X/Twitter, dan LinkedIn. Disarankan rasio 1.91:1 (mis. 1200x630px). Otomatis dikonversi ke WebP.
+                                </p>
+
+                                @if(!empty($currentOgImage))
+                                    <div class="pt-2 flex items-center gap-3">
+                                        <label class="flex items-center gap-2 text-xs font-mono text-accent-orange cursor-pointer">
+                                            <input type="checkbox" name="remove_og_image" value="1" class="rounded border-light-border dark:border-dark-border text-accent-orange focus:ring-0">
+                                            <span>Hapus banner kustom (kembali ke bawaan)</span>
+                                        </label>
+                                    </div>
+                                @endif
+                            </div>
+
+                            <div class="space-y-2">
+                                <span class="block text-[11px] font-mono uppercase text-muted">Pratinjau Banner Share Aktif:</span>
+                                @if(!empty($currentOgImage))
+                                    <div class="border border-light-border dark:border-dark-border aspect-[1.91/1] overflow-hidden bg-dark/20 relative group">
+                                        <img src="{{ asset($currentOgImage) }}" alt="OG Banner" class="w-full h-full object-cover">
+                                        <a href="{{ asset($currentOgImage) }}" target="_blank" class="absolute inset-0 bg-dark/60 opacity-0 group-hover:opacity-100 flex items-center justify-center text-xs font-mono uppercase text-accent transition-opacity">
+                                            Buka Ukuran Asli ↗
+                                        </a>
+                                    </div>
+                                @else
+                                    <div class="border border-dashed border-light-border dark:border-dark-border aspect-[1.91/1] flex flex-col items-center justify-center text-muted p-6 text-center">
+                                        <span class="text-2xl mb-1">🖼</span>
+                                        <span class="text-xs font-mono uppercase">Menggunakan Banner Bawaan (/images/og-default.jpg)</span>
+                                    </div>
+                                @endif
+                            </div>
+
+                            <div class="md:col-span-2">
+                                <label class="block text-xs font-mono uppercase text-muted mb-2">
+                                    Twitter / X Creator Handle
+                                </label>
+                                <input
+                                    type="text"
+                                    name="twitter_handle"
+                                    value="{{ $currentTwitter }}"
+                                    class="w-full px-4 py-3 bg-light dark:bg-dark border border-light-border dark:border-dark-border font-mono text-sm"
+                                    placeholder="@username"
+                                >
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- Group 3: Indexing, Webmaster & Analytics --}}
+                    <div class="p-6 md:p-8 border border-light-border dark:border-dark-border bg-light-surface/20 dark:bg-dark-card space-y-6">
+                        <h3 class="text-xs font-mono uppercase tracking-widest text-accent border-b border-light-border dark:border-dark-border pb-3">
+                            03 // Kontrol Mesin Pencari, Verifikasi Webmaster &amp; Analitik
+                        </h3>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            {{-- Robots Index Toggle --}}
+                            <div class="md:col-span-2 p-4 border border-light-border dark:border-dark-border bg-light dark:bg-dark flex items-start gap-4">
+                                <input
+                                    type="checkbox"
+                                    id="robots_index_toggle"
+                                    name="robots_index"
+                                    value="1"
+                                    x-model="robotsIndex"
+                                    class="mt-1 w-4 h-4 rounded border-light-border dark:border-dark-border text-accent focus:ring-accent"
+                                >
+                                <label for="robots_index_toggle" class="cursor-pointer select-none">
+                                    <span class="font-medium text-sm text-dark dark:text-offwhite block">
+                                        Izinkan Mesin Pencari Mengindeks Website Ini (index, follow)
+                                    </span>
+                                    <span class="text-xs font-mono text-muted block mt-0.5">
+                                        Hilangkan centang ini hanya jika website sedang dalam tahap perbaikan / uji coba rahasia (noindex, nofollow).
+                                    </span>
+                                </label>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-mono uppercase text-muted mb-2">
+                                    Google Search Console Verification Tag
+                                </label>
+                                <input
+                                    type="text"
+                                    name="google_verification"
+                                    value="{{ $currentGoogleVerif }}"
+                                    class="w-full px-4 py-3 bg-light dark:bg-dark border border-light-border dark:border-dark-border font-mono text-xs"
+                                    placeholder="Contoh: google-site-verification=abc123xyz"
+                                >
+                                <span class="text-[10px] font-mono text-muted mt-1 block">
+                                    Ambil kode verifikasi meta tag dari Google Search Console.
+                                </span>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-mono uppercase text-muted mb-2">
+                                    Bing Webmaster Tools Verification Tag
+                                </label>
+                                <input
+                                    type="text"
+                                    name="bing_verification"
+                                    value="{{ $currentBingVerif }}"
+                                    class="w-full px-4 py-3 bg-light dark:bg-dark border border-light-border dark:border-dark-border font-mono text-xs"
+                                    placeholder="Kode msvalidate.01"
+                                >
+                                <span class="text-[10px] font-mono text-muted mt-1 block">
+                                    Kode verifikasi meta dari Bing Webmaster Portal.
+                                </span>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-mono uppercase text-muted mb-2">
+                                    Google Analytics 4 (GA4 Measurement ID)
+                                </label>
+                                <input
+                                    type="text"
+                                    name="google_analytics_id"
+                                    value="{{ $currentGA }}"
+                                    class="w-full px-4 py-3 bg-light dark:bg-dark border border-light-border dark:border-dark-border font-mono text-xs"
+                                    placeholder="G-XXXXXXXXXX"
+                                >
+                                <span class="text-[10px] font-mono text-muted mt-1 block">
+                                    Script tracking gtag.js otomatis terpasang jika ID diisi.
+                                </span>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-mono uppercase text-muted mb-2">
+                                    Tipe Schema.org Structured Data
+                                </label>
+                                <select
+                                    name="schema_type"
+                                    x-model="schemaType"
+                                    class="w-full px-4 py-3 bg-light dark:bg-dark border border-light-border dark:border-dark-border font-mono text-xs"
+                                >
+                                    <option value="Person">Person (Profil Pribadi / Developer / Kreatif)</option>
+                                    <option value="ProfessionalService">ProfessionalService (Studio Jasa / Agensi)</option>
+                                </select>
+                                <span class="text-[10px] font-mono text-muted mt-1 block">
+                                    Membantu Google memetakan Rich Snippet secara akurat.
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button
+                        type="submit"
+                        class="px-8 py-4 bg-accent text-dark font-mono text-xs uppercase tracking-[0.2em] font-semibold hover:bg-accent-hover transition-colors cursor-pointer"
+                    >
+                        Simpan Konfigurasi SEO &amp; Metadata →
+                    </button>
+                </form>
+            </div>
+
+            {{-- ============================================================= --}}
+            {{-- TAB 07: ADMIN SECURITY                                        --}}
             {{-- ============================================================= --}}
             <div x-show="activeTab === 'security'" x-cloak class="max-w-xl">
                 <div class="pb-4 mb-8 border-b border-light-border dark:border-dark-border">
-                    <span class="text-xs font-mono uppercase tracking-widest text-accent">06 // ACCESS CONTROL</span>
+                    <span class="text-xs font-mono uppercase tracking-widest text-accent">07 // ACCESS CONTROL</span>
                     <h2 class="font-display italic text-3xl mt-1">Keamanan Akun Administrator</h2>
                 </div>
 
@@ -1212,12 +1561,12 @@
             </div>
 
             {{-- ============================================================= --}}
-            {{-- TAB 07: FIREWALL & IP BLACKLIST MANAGEMENT                    --}}
+            {{-- TAB 08: FIREWALL & IP BLACKLIST MANAGEMENT                    --}}
             {{-- ============================================================= --}}
             <div x-show="activeTab === 'firewall'" x-cloak class="space-y-10">
                 <div class="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-light-border dark:border-dark-border">
                     <div>
-                        <span class="text-xs font-mono uppercase tracking-widest text-accent-orange">07 // FIREWALL APPARATUS</span>
+                        <span class="text-xs font-mono uppercase tracking-widest text-accent-orange">08 // FIREWALL APPARATUS</span>
                         <h2 class="font-display italic text-3xl mt-1">Daftar Hitam IP &amp; Keamanan Jaringan</h2>
                     </div>
 

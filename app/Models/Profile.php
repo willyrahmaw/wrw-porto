@@ -32,6 +32,7 @@ class Profile extends Model
         'stats',
         'skills',
         'certificates',
+        'seo',
         'trusted_clients_count',
         'trusted_industries_count',
     ];
@@ -43,6 +44,7 @@ class Profile extends Model
             'stats' => 'array',
             'skills' => 'array',
             'certificates' => 'array',
+            'seo' => 'array',
             'trusted_clients_count' => 'integer',
             'trusted_industries_count' => 'integer',
         ];

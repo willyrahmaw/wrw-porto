@@ -613,5 +613,57 @@ class DashboardController extends Controller
         return redirect()->route('admin.dashboard', ['tab' => 'firewall'])
             ->with('success', "Alamat IP {$ip} berhasil dimasukkan ke daftar blokir.");
     }
+
+    /**
+     * Update SEO Meta Tags, Social OG Image, and Webmaster Verification.
+     */
+    public function updateSeo(Request $request): RedirectResponse
+    {
+        $profile = Profile::query()->firstOrFail();
+
+        $validated = $request->validate([
+            'meta_title' => ['required', 'string', 'max:150'],
+            'meta_description' => ['required', 'string', 'max:300'],
+            'meta_keywords' => ['nullable', 'string', 'max:500'],
+            'og_image_file' => ['nullable', 'image', 'max:4096'],
+            'twitter_handle' => ['nullable', 'string', 'max:100'],
+            'robots_index' => ['nullable', 'boolean'],
+            'google_verification' => ['nullable', 'string', 'max:255'],
+            'bing_verification' => ['nullable', 'string', 'max:255'],
+            'google_analytics_id' => ['nullable', 'string', 'max:50'],
+            'schema_type' => ['required', 'string', 'in:Person,ProfessionalService'],
+        ], [
+            'meta_title.required' => 'Judul Meta (Meta Title) wajib diisi.',
+            'meta_description.required' => 'Deskripsi Meta (Meta Description) wajib diisi.',
+        ]);
+
+        $seo = $profile->seo ?? [];
+        $ogImage = $seo['og_image'] ?? null;
+
+        if ($request->hasFile('og_image_file')) {
+            $ogImage = ImageOptimizerService::convertAndStore($request->file('og_image_file'), 'seo');
+        } elseif ($request->boolean('remove_og_image')) {
+            $ogImage = null;
+        }
+
+        $seo['meta_title'] = $validated['meta_title'];
+        $seo['meta_description'] = $validated['meta_description'];
+        $seo['meta_keywords'] = !empty($validated['meta_keywords']) ? trim((string) $validated['meta_keywords']) : null;
+        $seo['og_image'] = $ogImage;
+        $seo['twitter_handle'] = !empty($validated['twitter_handle']) ? trim((string) $validated['twitter_handle']) : null;
+        $seo['robots_index'] = $request->boolean('robots_index');
+        $seo['google_verification'] = !empty($validated['google_verification']) ? trim((string) $validated['google_verification']) : null;
+        $seo['bing_verification'] = !empty($validated['bing_verification']) ? trim((string) $validated['bing_verification']) : null;
+        $seo['google_analytics_id'] = !empty($validated['google_analytics_id']) ? trim((string) $validated['google_analytics_id']) : null;
+        $seo['schema_type'] = $validated['schema_type'];
+
+        $profile->seo = $seo;
+        $profile->save();
+
+        $this->flushPortfolioCache();
+
+        return redirect()->route('admin.dashboard', ['tab' => 'seo'])
+            ->with('success', 'Konfigurasi SEO, Open Graph & Webmaster berhasil diperbarui.');
+    }
 }
 

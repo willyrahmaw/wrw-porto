@@ -98,6 +98,18 @@ class DatabaseSeeder extends Seeder
                     'badge' => 'Security Audit',
                 ],
             ],
+            'seo' => [
+                'meta_title' => 'Willy Rahmat Wijaya | Full-Stack Web Developer & UI Engineer',
+                'meta_description' => 'Membantu bisnis membangun website yang rapi, cepat, dan mudah dikelola dengan Laravel & Tailwind CSS.',
+                'meta_keywords' => 'Full-Stack Developer, Laravel Developer, Tailwind CSS, Jasa Pembuatan Website, Web Developer Indonesia, Pembuatan Web Portofolio',
+                'og_image' => null,
+                'twitter_handle' => '@wrwstudio',
+                'robots_index' => true,
+                'google_verification' => null,
+                'bing_verification' => null,
+                'google_analytics_id' => null,
+                'schema_type' => 'Person',
+            ],
             'trusted_clients_count' => 20,
             'trusted_industries_count' => 8,
         ]);

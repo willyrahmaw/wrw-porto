@@ -89,6 +89,18 @@ class ExampleTest extends TestCase
         $this->assertEquals('Laravel Master Certification', \App\Models\Profile::first()->certificates[0]['title']);
         $this->assertNotNull(\App\Models\Profile::first()->certificates[0]['file_path']);
 
+        // Test updating SEO settings from admin
+        $this->actingAs($user)->put('/admin/seo', [
+            'meta_title' => 'Willy Rahmat Wijaya — Top Full-Stack Engineer',
+            'meta_description' => 'Membangun aplikasi web dan pengalaman digital kelas Awwwards dengan performa tinggi.',
+            'meta_keywords' => 'Laravel, Tailwind, Fullstack Developer',
+            'robots_index' => '1',
+            'twitter_handle' => '@wrwstudio',
+            'schema_type' => 'Person',
+        ])->assertRedirect();
+
+        $this->assertEquals('Willy Rahmat Wijaya — Top Full-Stack Engineer', \App\Models\Profile::first()->seo['meta_title']);
+
         // OWASP Grade A Security Headers assertions
         $home = $this->get('/');
         $home->assertHeader('X-Frame-Options', 'SAMEORIGIN');
