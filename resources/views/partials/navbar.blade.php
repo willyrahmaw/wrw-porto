@@ -26,20 +26,15 @@
 >
     <div class="max-w-[1440px] mx-auto px-4 sm:px-6 md:px-12 flex items-center justify-between">
 
-        {{-- Left: Initials / Brand Mark & Availability Pill --}}
-        <div class="flex items-center gap-3 sm:gap-4">
+        {{-- Left: Brand Mark / Monogram --}}
+        <div>
             <a
                 href="{{ route('home') }}"
-                class="font-display italic text-2xl sm:text-3xl tracking-tight text-dark dark:text-offwhite hover:text-accent dark:hover:text-accent transition-colors leading-none"
+                class="font-display italic text-2xl sm:text-3xl tracking-tight text-dark dark:text-offwhite hover:text-accent dark:hover:text-accent transition-colors leading-none block"
                 aria-label="Beranda {{ $profile?->name ?? 'Portofolio' }}"
             >
                 {{ $profile?->initials ?? 'WRW.' }}
             </a>
-
-            <div class="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-light-border dark:border-dark-border text-[10px] font-mono uppercase tracking-widest text-muted bg-light-surface/40 dark:bg-dark-surface/40">
-                <span class="w-1.5 h-1.5 rounded-full {{ $profile?->is_available ? 'bg-accent animate-pulse' : 'bg-accent-orange' }}"></span>
-                <span>{{ $profile?->is_available ? 'Available' : 'Booked' }}</span>
-            </div>
         </div>
 
         {{-- Center: Anchor Navigation (Desktop) --}}
@@ -126,18 +121,11 @@
             @endforeach
         </nav>
 
-        <div class="pt-6 border-t border-light-border dark:border-dark-border flex flex-col gap-4">
-            <div class="flex items-center justify-between text-xs font-mono uppercase tracking-widest text-muted">
-                <span>STATUS:</span>
-                <span class="inline-flex items-center gap-1.5 text-accent font-semibold">
-                    <span class="w-1.5 h-1.5 rounded-full {{ $profile?->is_available ? 'bg-accent animate-pulse' : 'bg-accent-orange' }}"></span>
-                    <span>{{ $profile?->is_available ? 'Open for Projects' : 'Slot Penuh' }}</span>
-                </span>
-            </div>
+        <div class="pt-6 border-t border-light-border dark:border-dark-border">
             <a
                 href="{{ route('home') }}#contact"
                 @click="mobileMenuOpen = false"
-                class="w-full py-3.5 bg-accent text-dark text-center font-mono text-xs uppercase tracking-[0.2em] font-semibold hover:bg-accent-hover transition-colors"
+                class="block w-full py-3.5 bg-accent text-dark text-center font-mono text-xs uppercase tracking-[0.2em] font-semibold hover:bg-accent-hover transition-colors"
             >
                 Let's Talk — Mulai Proyek &rarr;
             </a>
