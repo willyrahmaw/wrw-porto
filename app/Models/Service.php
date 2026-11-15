@@ -1,0 +1,29 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+
+class Service extends Model
+{
+    use HasFactory;
+
+    protected $fillable = [
+        'number',
+        'title',
+        'description',
+        'deliverables',
+        'icon',
+        'sort_order',
+    ];
+
+    protected function casts(): array
+    {
+        return [
+            'deliverables' => 'array',
+            'sort_order' => 'integer',
+        ];
+    }
+}
+
