@@ -60,7 +60,7 @@
                             ['id' => 'services', 'num' => '03', 'label' => 'Services & Capabilities', 'badge' => $services->count()],
                             ['id' => 'clients', 'num' => '04', 'label' => 'Clients & Testimonials', 'badge' => $clients->count()],
                             ['id' => 'profile', 'num' => '05', 'label' => 'Profile, Bio & CV', 'badge' => null],
-                            ['id' => 'seo', 'num' => '06', 'label' => 'SEO & Meta Config', 'badge' => null],
+                            ['id' => 'seo', 'num' => '06', 'label' => 'SEO, Favicon & Meta', 'badge' => null],
                             ['id' => 'security', 'num' => '07', 'label' => 'Admin Security', 'badge' => null],
                             ['id' => 'firewall', 'num' => '08', 'label' => 'Firewall & IP Blacklist', 'badge' => $bannedIps->filter->isActive()->count() ?: null],
                         ];
@@ -1199,6 +1199,8 @@
                 $currentTitle = $seoData['meta_title'] ?? ($profile?->name . ' | ' . $profile?->profession);
                 $currentDesc = $seoData['meta_description'] ?? ($profile?->tagline ?? '');
                 $currentKeywords = $seoData['meta_keywords'] ?? 'Full-Stack Developer, Laravel, Tailwind CSS';
+                $currentFavicon = $seoData['favicon'] ?? null;
+                $defaultFavicon = asset('favicon.svg');
                 $currentOgImage = $seoData['og_image'] ?? null;
                 $currentTwitter = $seoData['twitter_handle'] ?? '@wrwstudio';
                 $currentRobots = $seoData['robots_index'] ?? true;
@@ -1215,15 +1217,16 @@
                     title: {{ Js::from($currentTitle) }},
                     desc: {{ Js::from($currentDesc) }},
                     robotsIndex: {{ $currentRobots ? 'true' : 'false' }},
-                    schemaType: {{ Js::from($currentSchema) }}
+                    schemaType: {{ Js::from($currentSchema) }},
+                    faviconPreview: {{ Js::from($currentFavicon ? asset($currentFavicon) : $defaultFavicon) }}
                 }"
             >
                 <div class="pb-4 border-b border-light-border dark:border-dark-border flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div>
-                        <span class="text-xs font-mono uppercase tracking-widest text-accent">06 // SEARCH ENGINE OPTIMIZATION</span>
-                        <h2 class="font-display italic text-3xl mt-1">SEO, Open Graph &amp; Webmaster</h2>
+                        <span class="text-xs font-mono uppercase tracking-widest text-accent">06 // SEARCH ENGINE &amp; IDENTITY</span>
+                        <h2 class="font-display italic text-3xl mt-1">SEO, Favicon &amp; Open Graph</h2>
                         <p class="text-xs text-muted mt-1">
-                            Kelola judul meta, pratinjau mesin pencari Google, kartu sosial media WhatsApp/Twitter, sitemap, dan verifikasi webmaster.
+                            Kelola judul meta, ikon tab browser (favicon), pratinjau Google Search, banner WhatsApp/Twitter, sitemap, dan verifikasi webmaster.
                         </p>
                     </div>
 
@@ -1354,10 +1357,89 @@
                         </div>
                     </div>
 
-                    {{-- Group 2: Social Media & Open Graph --}}
+                    {{-- Group 2: Favicon & Web App Icon --}}
+                    <div class="p-6 md:p-8 border border-light-border dark:border-dark-border bg-light-surface/20 dark:bg-dark-card space-y-6">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-light-border dark:border-dark-border pb-3">
+                            <div>
+                                <h3 class="text-xs font-mono uppercase tracking-widest text-accent">
+                                    02 // Ikon Website (Favicon, Apple Touch Icon &amp; Tab Browser)
+                                </h3>
+                                <p class="text-xs text-muted mt-1">
+                                    Atur logo/ikon kecil yang tampil di tab browser, riwayat bookmark, dan shortcut homescreen perangkat seluler.
+                                </p>
+                            </div>
+                            <span class="text-[11px] font-mono text-muted uppercase">Format: SVG, PNG, ICO, WebP</span>
+                        </div>
+
+                        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+                            {{-- Upload Controls (7 cols) --}}
+                            <div class="lg:col-span-7 space-y-4">
+                                <div>
+                                    <label class="block text-xs font-mono uppercase text-muted mb-2">
+                                        Unggah Berkas Ikon Baru (.svg / .png / .ico / .webp)
+                                    </label>
+                                    <input
+                                        type="file"
+                                        name="favicon_file"
+                                        accept=".ico,.png,.svg,.webp,.jpg,.jpeg"
+                                        @change="
+                                            const file = $event.target.files[0];
+                                            if (file) {
+                                                faviconPreview = URL.createObjectURL(file);
+                                            }
+                                        "
+                                        class="block w-full text-xs font-mono text-muted file:mr-3 file:py-2 file:px-4 file:border-0 file:text-xs file:font-mono file:uppercase file:tracking-wider file:bg-dark dark:file:bg-offwhite file:text-offwhite dark:file:text-dark hover:file:bg-accent hover:file:text-dark cursor-pointer transition-colors"
+                                    >
+                                    <p class="text-[11px] font-mono text-muted mt-1.5 leading-relaxed">
+                                        Disarankan gambar berasio 1:1 persegi (min 32x32px atau 512x512px). Gunakan format <strong>.svg</strong> atau <strong>.png</strong> dengan background transparan untuk ketajaman optimal di semua resolusi layar.
+                                    </p>
+                                </div>
+
+                                @if(!empty($currentFavicon))
+                                    <div class="pt-2 flex items-center gap-3">
+                                        <label class="flex items-center gap-2 text-xs font-mono text-accent-orange cursor-pointer">
+                                            <input type="checkbox" name="remove_favicon" value="1" class="rounded border-light-border dark:border-dark-border text-accent-orange focus:ring-0">
+                                            <span>Hapus ikon kustom (kembali ke favicon bawaan)</span>
+                                        </label>
+                                    </div>
+                                @endif
+                            </div>
+
+                            {{-- Live Browser Tab Simulation (5 cols) --}}
+                            <div class="lg:col-span-5">
+                                <span class="block text-[11px] font-mono uppercase text-muted mb-2">Live Simulasi Tampilan Tab Browser:</span>
+                                <div class="rounded-lg border border-light-border dark:border-dark-border bg-light-surface dark:bg-dark overflow-hidden shadow-sm">
+                                    {{-- Browser Window Header --}}
+                                    <div class="bg-light-border/40 dark:bg-dark-surface/80 px-3 py-2 flex items-center gap-3 border-b border-light-border dark:border-dark-border">
+                                        <div class="flex items-center gap-1.5 shrink-0">
+                                            <div class="w-2.5 h-2.5 rounded-full bg-red-500/80"></div>
+                                            <div class="w-2.5 h-2.5 rounded-full bg-yellow-500/80"></div>
+                                            <div class="w-2.5 h-2.5 rounded-full bg-green-500/80"></div>
+                                        </div>
+                                        {{-- Simulated Tab --}}
+                                        <div class="flex-1 max-w-[210px] bg-light dark:bg-dark-card border-t border-x border-light-border dark:border-dark-border rounded-t-md px-2.5 py-1.5 flex items-center gap-2 -mb-2 shadow-xs">
+                                            <img :src="faviconPreview" alt="Favicon Preview" class="w-4 h-4 object-contain rounded-xs shrink-0">
+                                            <span class="text-[11px] font-sans truncate text-dark dark:text-offwhite font-medium" x-text="title || 'Portofolio'"></span>
+                                            <span class="text-[10px] text-muted ml-auto">&times;</span>
+                                        </div>
+                                    </div>
+                                    {{-- Browser URL Bar --}}
+                                    <div class="p-2.5 bg-light dark:bg-dark flex items-center gap-2">
+                                        <div class="flex-1 bg-light-surface dark:bg-dark-surface border border-light-border dark:border-dark-border rounded px-2.5 py-1 flex items-center gap-2 text-[11px] font-mono text-muted">
+                                            <span class="text-accent text-[10px]">🔒</span>
+                                            <span class="text-dark dark:text-offwhite font-semibold">https://</span>
+                                            <span class="truncate">willyrahmat.dev</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- Group 3: Social Media & Open Graph --}}
                     <div class="p-6 md:p-8 border border-light-border dark:border-dark-border bg-light-surface/20 dark:bg-dark-card space-y-6">
                         <h3 class="text-xs font-mono uppercase tracking-widest text-accent border-b border-light-border dark:border-dark-border pb-3">
-                            02 // Open Graph &amp; Social Card (WhatsApp, Telegram, Facebook, Twitter)
+                            03 // Open Graph &amp; Social Card (WhatsApp, Telegram, Facebook, Twitter)
                         </h3>
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
@@ -1418,10 +1500,10 @@
                         </div>
                     </div>
 
-                    {{-- Group 3: Indexing, Webmaster & Analytics --}}
+                    {{-- Group 4: Indexing, Webmaster & Analytics --}}
                     <div class="p-6 md:p-8 border border-light-border dark:border-dark-border bg-light-surface/20 dark:bg-dark-card space-y-6">
                         <h3 class="text-xs font-mono uppercase tracking-widest text-accent border-b border-light-border dark:border-dark-border pb-3">
-                            03 // Kontrol Mesin Pencari, Verifikasi Webmaster &amp; Analitik
+                            04 // Kontrol Mesin Pencari, Verifikasi Webmaster &amp; Analitik
                         </h3>
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -1516,7 +1598,7 @@
                         type="submit"
                         class="px-8 py-4 bg-accent text-dark font-mono text-xs uppercase tracking-[0.2em] font-semibold hover:bg-accent-hover transition-colors cursor-pointer"
                     >
-                        Simpan Konfigurasi SEO &amp; Metadata →
+                        Simpan Konfigurasi SEO, Favicon &amp; Metadata →
                     </button>
                 </form>
             </div>

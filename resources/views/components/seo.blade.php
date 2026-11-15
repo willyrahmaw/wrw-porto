@@ -15,6 +15,22 @@
 @endif
 <link rel="canonical" href="{{ $canonical }}">
 
+{{-- Favicon, Apple Touch & Web App Icons --}}
+@php
+    $faviconUrl = !empty($seo['favicon']) ? asset($seo['favicon']) : asset('favicon.svg');
+    $faviconExt = strtolower(pathinfo(parse_url($faviconUrl, PHP_URL_PATH) ?? '', PATHINFO_EXTENSION));
+    $faviconMime = match($faviconExt) {
+        'svg' => 'image/svg+xml',
+        'png' => 'image/png',
+        'webp' => 'image/webp',
+        'ico' => 'image/x-icon',
+        default => 'image/x-icon',
+    };
+@endphp
+<link rel="icon" type="{{ $faviconMime }}" href="{{ $faviconUrl }}">
+<link rel="alternate icon" href="{{ asset('favicon.ico') }}">
+<link rel="apple-touch-icon" href="{{ $faviconUrl }}">
+
 {{-- Search Engine Indexing Directives --}}
 <meta name="robots" content="{{ ($seo['robots_index'] ?? true) ? 'index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1' : 'noindex, nofollow' }}">
 

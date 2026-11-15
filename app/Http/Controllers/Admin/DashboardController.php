@@ -625,6 +625,7 @@ class DashboardController extends Controller
             'meta_title' => ['required', 'string', 'max:150'],
             'meta_description' => ['required', 'string', 'max:300'],
             'meta_keywords' => ['nullable', 'string', 'max:500'],
+            'favicon_file' => ['nullable', 'file', 'mimes:ico,png,svg,webp,jpg,jpeg', 'max:2048'],
             'og_image_file' => ['nullable', 'image', 'max:4096'],
             'twitter_handle' => ['nullable', 'string', 'max:100'],
             'robots_index' => ['nullable', 'boolean'],
@@ -635,11 +636,29 @@ class DashboardController extends Controller
         ], [
             'meta_title.required' => 'Judul Meta (Meta Title) wajib diisi.',
             'meta_description.required' => 'Deskripsi Meta (Meta Description) wajib diisi.',
+            'favicon_file.mimes' => 'Format favicon harus berupa .ico, .png, .svg, .webp, atau .jpg.',
+            'favicon_file.max' => 'Ukuran file favicon maksimal 2MB.',
         ]);
 
         $seo = $profile->seo ?? [];
+        $favicon = $seo['favicon'] ?? null;
         $ogImage = $seo['og_image'] ?? null;
 
+        // Process Favicon / Web App Icon
+        if ($request->hasFile('favicon_file')) {
+            $file = $request->file('favicon_file');
+            $ext = strtolower($file->getClientOriginalExtension());
+            if (in_array($ext, ['svg', 'ico', 'png'])) {
+                $path = $file->store('seo', 'public');
+                $favicon = '/storage/' . $path;
+            } else {
+                $favicon = ImageOptimizerService::convertAndStore($file, 'seo', 90, 512);
+            }
+        } elseif ($request->boolean('remove_favicon')) {
+            $favicon = null;
+        }
+
+        // Process Open Graph Banner
         if ($request->hasFile('og_image_file')) {
             $ogImage = ImageOptimizerService::convertAndStore($request->file('og_image_file'), 'seo');
         } elseif ($request->boolean('remove_og_image')) {
@@ -649,6 +668,7 @@ class DashboardController extends Controller
         $seo['meta_title'] = $validated['meta_title'];
         $seo['meta_description'] = $validated['meta_description'];
         $seo['meta_keywords'] = !empty($validated['meta_keywords']) ? trim((string) $validated['meta_keywords']) : null;
+        $seo['favicon'] = $favicon;
         $seo['og_image'] = $ogImage;
         $seo['twitter_handle'] = !empty($validated['twitter_handle']) ? trim((string) $validated['twitter_handle']) : null;
         $seo['robots_index'] = $request->boolean('robots_index');
@@ -663,7 +683,7 @@ class DashboardController extends Controller
         $this->flushPortfolioCache();
 
         return redirect()->route('admin.dashboard', ['tab' => 'seo'])
-            ->with('success', 'Konfigurasi SEO, Open Graph & Webmaster berhasil diperbarui.');
+            ->with('success', 'Konfigurasi SEO, Favicon & Metadata berhasil diperbarui.');
     }
 }
 
