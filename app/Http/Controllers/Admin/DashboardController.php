@@ -654,6 +654,17 @@ class DashboardController extends Controller
             } else {
                 $favicon = ImageOptimizerService::convertAndStore($file, 'seo', 90, 512);
             }
+
+            // Sync with root public/ favicon for legacy crawlers and direct /favicon.ico queries
+            try {
+                if ($ext === 'svg') {
+                    @copy($file->getRealPath(), public_path('favicon.svg'));
+                } elseif ($ext === 'ico') {
+                    @copy($file->getRealPath(), public_path('favicon.ico'));
+                }
+            } catch (\Throwable) {
+                // Ignore if filesystem permissions prevent copy
+            }
         } elseif ($request->boolean('remove_favicon')) {
             $favicon = null;
         }

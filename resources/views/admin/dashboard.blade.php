@@ -1218,7 +1218,8 @@
                     desc: {{ Js::from($currentDesc) }},
                     robotsIndex: {{ $currentRobots ? 'true' : 'false' }},
                     schemaType: {{ Js::from($currentSchema) }},
-                    faviconPreview: {{ Js::from($currentFavicon ? asset($currentFavicon) : $defaultFavicon) }}
+                    faviconPreview: {{ Js::from($currentFavicon ? asset($currentFavicon) : $defaultFavicon) }},
+                    ogPreview: {{ Js::from($currentOgImage ? asset($currentOgImage) : asset('images/og-default.jpg')) }}
                 }"
             >
                 <div class="pb-4 border-b border-light-border dark:border-dark-border flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -1452,6 +1453,12 @@
                                     type="file"
                                     name="og_image_file"
                                     accept="image/*"
+                                    @change="
+                                        const file = $event.target.files[0];
+                                        if (file) {
+                                            ogPreview = URL.createObjectURL(file);
+                                        }
+                                    "
                                     class="block w-full text-xs font-mono text-muted file:mr-3 file:py-2 file:px-4 file:border-0 file:text-xs file:font-mono file:uppercase file:tracking-wider file:bg-dark dark:file:bg-offwhite file:text-offwhite dark:file:text-dark hover:file:bg-accent hover:file:text-dark cursor-pointer transition-colors"
                                 >
                                 <p class="text-[11px] font-mono text-muted">
@@ -1466,23 +1473,44 @@
                                         </label>
                                     </div>
                                 @endif
+
+                                {{-- Educational Callout --}}
+                                <div class="mt-4 p-3.5 border border-accent/20 bg-accent/5 text-xs text-muted leading-relaxed">
+                                    <div class="flex items-start gap-2.5">
+                                        <span class="text-accent text-sm leading-none shrink-0">💡</span>
+                                        <div class="space-y-1">
+                                            <p class="font-semibold text-dark dark:text-offwhite font-mono text-[11px] uppercase tracking-wider">
+                                                Kenapa OG Image tidak tampil di halaman web?
+                                            </p>
+                                            <p class="text-[11px]">
+                                                OG Image adalah metadata HTML (<code class="font-mono text-accent">&lt;meta property="og:image"&gt;</code>) di bagian <code class="font-mono text-accent">&lt;head&gt;</code>. Tujuannya khusus untuk dibaca oleh bot crawler (WhatsApp, Telegram, Google, dsb.) saat link dibagikan, sehingga <strong>sengaja tidak ditampilkan sebagai elemen visual di layout website</strong>.
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
 
                             <div class="space-y-2">
-                                <span class="block text-[11px] font-mono uppercase text-muted">Pratinjau Banner Share Aktif:</span>
-                                @if(!empty($currentOgImage))
-                                    <div class="border border-light-border dark:border-dark-border aspect-[1.91/1] overflow-hidden bg-dark/20 relative group">
-                                        <img src="{{ asset($currentOgImage) }}" alt="OG Banner" class="w-full h-full object-cover">
-                                        <a href="{{ asset($currentOgImage) }}" target="_blank" class="absolute inset-0 bg-dark/60 opacity-0 group-hover:opacity-100 flex items-center justify-center text-xs font-mono uppercase text-accent transition-opacity">
-                                            Buka Ukuran Asli ↗
-                                        </a>
+                                <span class="block text-[11px] font-mono uppercase text-muted">Pratinjau Simulasi Share WhatsApp:</span>
+                                <div class="max-w-sm rounded-lg overflow-hidden border border-light-border dark:border-dark-border bg-light dark:bg-dark p-2.5 shadow-sm">
+                                    <div class="rounded-md overflow-hidden bg-dark/20 border border-light-border dark:border-dark-border">
+                                        <div class="aspect-[1.91/1] overflow-hidden bg-dark relative">
+                                            <img :src="ogPreview" alt="OG Preview" class="w-full h-full object-cover">
+                                        </div>
+                                        <div class="p-3 bg-light-surface/90 dark:bg-dark/95 border-t border-light-border dark:border-dark-border space-y-1">
+                                            <span class="text-[10px] font-mono uppercase tracking-wider text-muted block">{{ request()->getHost() }}</span>
+                                            <h4 class="text-xs font-semibold text-dark dark:text-offwhite truncate" x-text="title || 'WRW Studio - Portfolio'"></h4>
+                                            <p class="text-[11px] text-muted line-clamp-2 leading-snug" x-text="desc || 'Portfolio &amp; Creative Developer'"></p>
+                                        </div>
                                     </div>
-                                @else
-                                    <div class="border border-dashed border-light-border dark:border-dark-border aspect-[1.91/1] flex flex-col items-center justify-center text-muted p-6 text-center">
-                                        <span class="text-2xl mb-1">🖼</span>
-                                        <span class="text-xs font-mono uppercase">Menggunakan Banner Bawaan (/images/og-default.jpg)</span>
+                                    <div class="mt-2 flex items-center justify-between text-[10px] font-mono text-muted px-1">
+                                        <span class="text-emerald-500 font-semibold flex items-center gap-1.5">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                                            Live Social Card Preview
+                                        </span>
+                                        <span>1200 &times; 630</span>
                                     </div>
-                                @endif
+                                </div>
                             </div>
 
                             <div class="md:col-span-2">

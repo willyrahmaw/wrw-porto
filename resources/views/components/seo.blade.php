@@ -17,7 +17,9 @@
 
 {{-- Favicon, Apple Touch & Web App Icons --}}
 @php
-    $faviconUrl = !empty($seo['favicon']) ? asset($seo['favicon']) : asset('favicon.svg');
+    $faviconPath = $seo['favicon'] ?? null;
+    $faviconUrl = !empty($faviconPath) ? asset($faviconPath) : asset('favicon.svg');
+    $faviconVersion = !empty($faviconPath) ? substr(md5($faviconPath), 0, 8) : '1';
     $faviconExt = strtolower(pathinfo(parse_url($faviconUrl, PHP_URL_PATH) ?? '', PATHINFO_EXTENSION));
     $faviconMime = match($faviconExt) {
         'svg' => 'image/svg+xml',
@@ -27,9 +29,13 @@
         default => 'image/x-icon',
     };
 @endphp
-<link rel="icon" type="{{ $faviconMime }}" href="{{ $faviconUrl }}">
-<link rel="alternate icon" href="{{ asset('favicon.ico') }}">
-<link rel="apple-touch-icon" href="{{ $faviconUrl }}">
+<link rel="icon" type="{{ $faviconMime }}" href="{{ $faviconUrl }}?v={{ $faviconVersion }}">
+<link rel="apple-touch-icon" href="{{ $faviconUrl }}?v={{ $faviconVersion }}">
+@if(empty($faviconPath))
+<link rel="alternate icon" href="{{ asset('favicon.ico') }}?v=1">
+@else
+<link rel="alternate icon" href="{{ $faviconUrl }}?v={{ $faviconVersion }}">
+@endif
 
 {{-- Search Engine Indexing Directives --}}
 <meta name="robots" content="{{ ($seo['robots_index'] ?? true) ? 'index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1' : 'noindex, nofollow' }}">

@@ -81,9 +81,11 @@
                             id="email"
                             type="email"
                             name="email"
-                            value="{{ old('email', 'admin@wrw.studio') }}"
+                            value="{{ old('email') }}"
+                            placeholder="nama@domain.com"
                             required
                             autofocus
+                            autocomplete="email"
                             class="w-full px-4 py-3.5 bg-light dark:bg-dark border border-light-border dark:border-dark-border text-dark dark:text-offwhite text-sm font-mono focus:outline-none focus:border-accent transition-colors"
                         >
                     </div>
