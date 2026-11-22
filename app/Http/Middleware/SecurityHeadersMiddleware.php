@@ -79,7 +79,7 @@ class SecurityHeadersMiddleware
         // 8. Remove Fingerprint Headers (OWASP A05)
         $response->headers->remove('X-Powered-By');
         $response->headers->remove('Server');
-        if (function_exists('header_remove')) {
+        if (function_exists('header_remove') && !headers_sent()) {
             header_remove('X-Powered-By');
         }
 
