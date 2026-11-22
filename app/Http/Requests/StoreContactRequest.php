@@ -19,7 +19,9 @@ class StoreContactRequest extends FormRequest
             'project_type' => ['required', 'string', 'max:100'],
             'budget_range' => ['nullable', 'string', 'max:100'],
             'message' => ['required', 'string', 'min:15', 'max:3000'],
-            'website_url' => ['nullable', 'max:0'], // Honeypot field: must be empty
+            'website_url' => ['nullable', 'string'], // Primary honeypot trap
+            'phone_confirmation' => ['nullable', 'string'], // Secondary honeypot trap
+            '_token_time' => ['nullable', 'string'],
         ];
     }
 

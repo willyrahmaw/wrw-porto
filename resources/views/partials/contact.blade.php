@@ -104,7 +104,9 @@
                         email: '',
                         project_type: '{{ $projectTypes[0] }}',
                         message: '',
-                        website_url: ''
+                        website_url: '',
+                        phone_confirmation: '',
+                        _token_time: '{{ \App\Services\SpamDetectorService::generateTimeToken() }}'
                     },
                     loading: false,
                     status: null,
@@ -156,10 +158,14 @@
             >
                 <form @submit.prevent="submitForm" class="p-5 sm:p-8 md:p-12 border border-light-border dark:border-dark-border bg-light-surface/20 dark:bg-dark-card space-y-8" novalidate>
 
-                    {{-- Honeypot --}}
+                    {{-- Anti-Spam Dual Honeypots --}}
                     <div class="hidden" aria-hidden="true">
                         <label for="website_url">Jangan isi kolom ini</label>
                         <input type="text" id="website_url" name="website_url" x-model="form.website_url" tabindex="-1" autocomplete="off">
+                    </div>
+                    <div style="position: absolute; left: -9999px; top: -9999px; opacity: 0; pointer-events: none;" aria-hidden="true">
+                        <label for="phone_confirmation">Konfirmasi Telepon</label>
+                        <input type="text" id="phone_confirmation" name="phone_confirmation" x-model="form.phone_confirmation" tabindex="-1" autocomplete="off">
                     </div>
 
                     {{-- Name & Email --}}

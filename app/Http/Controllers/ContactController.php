@@ -6,6 +6,7 @@ use App\Http\Requests\StoreContactRequest;
 use App\Mail\ContactMessageReceived;
 use App\Models\Message;
 use App\Models\Profile;
+use App\Services\SpamDetectorService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
@@ -18,6 +19,17 @@ class ContactController extends Controller
     public function store(StoreContactRequest $request): JsonResponse
     {
         $validated = $request->validated();
+
+        // Multi-Layer Anti-Bot & Anti-Spam Verification
+        $spamCheck = SpamDetectorService::check($request, $validated);
+        if ($spamCheck['is_spam']) {
+            // Return silent 200 OK so bots believe their payload succeeded,
+            // but discard it without polluting database or firing emails.
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Terima kasih! Pesan Anda telah diterima. Saya biasanya membalas dalam waktu kurang dari 24 jam.',
+            ], 200);
+        }
 
         $contactMessage = Message::create([
             'name' => $validated['name'],

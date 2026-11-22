@@ -14,9 +14,9 @@ Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/projects', [ProjectController::class, 'index'])->name('projects.index');
 Route::get('/projects/{project:slug}', [ProjectController::class, 'show'])->name('projects.show');
 
-// Contact Form Submission with Rate Limiting (max 5 requests per minute per IP)
+// Contact Form Submission with Strict Rate Limiting (max 3 requests per minute per IP)
 Route::post('/contact', [ContactController::class, 'store'])
-    ->middleware('throttle:5,1')
+    ->middleware('throttle:3,1')
     ->name('contact.store');
 
 // Public Customer Testimonial Form & Submission (with Rate Limiting)
@@ -71,6 +71,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
         // Inbox Messages
         Route::patch('/messages/{message}/toggle', [DashboardController::class, 'toggleMessageRead'])->whereNumber('message')->name('messages.toggle');
+        Route::post('/messages/{message}/ban-ip', [DashboardController::class, 'banAndDestroyMessage'])->whereNumber('message')->name('messages.ban-ip');
+        Route::delete('/messages/purge', [DashboardController::class, 'purgeAllMessages'])->name('messages.purge');
         Route::delete('/messages/{message}', [DashboardController::class, 'deleteMessage'])->whereNumber('message')->name('messages.destroy');
 
         // Admin Account Security

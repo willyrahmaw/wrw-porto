@@ -529,6 +529,38 @@ class DashboardController extends Controller
     }
 
     /**
+     * Ban Spammer IP and Delete the Message.
+     */
+    public function banAndDestroyMessage(Message $message): RedirectResponse
+    {
+        $ip = $message->ip_address;
+        if (!empty($ip) && $ip !== '127.0.0.1' && $ip !== '::1') {
+            IpBanService::ban(
+                ip: $ip,
+                reason: 'Spam / bot submission via contact form (' . substr($message->message, 0, 80) . ')',
+                userAgent: request()->userAgent()
+            );
+        }
+
+        $message->delete();
+
+        return redirect()->route('admin.dashboard', ['tab' => 'inbox'])
+            ->with('success', 'IP pengirim (' . ($ip ?: 'N/A') . ') berhasil diblokir ke Firewall dan pesan telah dihapus.');
+    }
+
+    /**
+     * Purge all messages from inbox.
+     */
+    public function purgeAllMessages(): RedirectResponse
+    {
+        $total = Message::query()->count();
+        Message::query()->delete();
+
+        return redirect()->route('admin.dashboard', ['tab' => 'inbox'])
+            ->with('success', "Seluruh ({$total}) pesan di kotak masuk berhasil dibersihkan.");
+    }
+
+    /**
      * Update Admin Security Credentials (Email & Password).
      */
     public function updatePassword(Request $request): RedirectResponse

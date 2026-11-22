@@ -350,11 +350,21 @@
             {{-- TAB 01: INQUIRIES INBOX                                       --}}
             {{-- ============================================================= --}}
             <div x-show="activeTab === 'inbox'" x-cloak class="space-y-6">
-                <div class="flex items-center justify-between pb-4 border-b border-light-border dark:border-dark-border">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-light-border dark:border-dark-border">
                     <div>
                         <span class="text-xs font-mono uppercase tracking-widest text-accent">01 // CLIENT INQUIRIES</span>
                         <h2 class="font-display italic text-3xl mt-1">Kotak Masuk Brief Proyek ({{ $messages->count() }})</h2>
                     </div>
+
+                    @if($messages->isNotEmpty())
+                        <form method="POST" action="{{ route('admin.messages.purge') }}" onsubmit="return confirm('PERINGATAN: Apakah Anda yakin ingin MENGHAPUS SEMUA pesan di kotak masuk? Tindakan ini tidak dapat dibatalkan.')">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="px-3.5 py-2 border border-accent-orange/40 text-accent-orange text-xs font-mono uppercase tracking-wider hover:bg-accent-orange hover:text-white transition-colors cursor-pointer">
+                                Bersihkan Seluruh Inbox ({{ $messages->count() }})
+                            </button>
+                        </form>
+                    @endif
                 </div>
 
                 @if($messages->isEmpty())
@@ -402,6 +412,15 @@
                                                 Hapus
                                             </button>
                                         </form>
+
+                                        @if(!empty($msg->ip_address) && $msg->ip_address !== '127.0.0.1')
+                                            <form method="POST" action="{{ route('admin.messages.ban-ip', $msg) }}" onsubmit="return confirm('Blokir IP {{ $msg->ip_address }} ke Firewall sistem dan hapus pesan ini?')">
+                                                @csrf
+                                                <button type="submit" class="px-3 py-2 bg-red-500/10 text-red-500 border border-red-500/30 text-xs font-mono uppercase tracking-wider hover:bg-red-500 hover:text-white transition-colors cursor-pointer" title="Blokir IP spammer ini ke Firewall">
+                                                    Blokir IP
+                                                </button>
+                                            </form>
+                                        @endif
                                     </div>
                                 </div>
 
