@@ -132,8 +132,55 @@ class IpBanSecurityTest extends TestCase
         $this->assertTrue($ban->is_permanent);
         $this->assertEquals(3, $ban->strike_count);
 
+        // Log out admin so subsequent visit is from a guest
+        $this->app['auth']->logout();
+
         // The target IP is blocked
         $visit = $this->withServerVariables(['REMOTE_ADDR' => $targetIp])->get('/');
         $visit->assertStatus(403);
+    }
+
+    public function test_authenticated_admin_is_immune_from_ip_ban(): void
+    {
+        $this->seed();
+        $user = User::first();
+        $adminIp = '103.55.66.77';
+
+        // Ban the admin's IP
+        IpBanService::ban($adminIp, 'Accidental ban during penetration test');
+
+        // Without auth -> 403 Forbidden
+        $guestVisit = $this->withServerVariables(['REMOTE_ADDR' => $adminIp])->get('/');
+        $guestVisit->assertStatus(403);
+
+        // When authenticated -> 200 OK (Immunity active)
+        $authVisit = $this->actingAs($user)->withServerVariables(['REMOTE_ADDR' => $adminIp])->get('/admin');
+        $authVisit->assertStatus(200);
+    }
+
+    public function test_banned_ip_can_emergency_unban_using_admin_password(): void
+    {
+        $this->seed();
+        $targetIp = '103.99.88.77';
+
+        // Ban IP
+        IpBanService::ban($targetIp, 'Accidental test ban');
+        $this->assertNotNull(IpBanService::isBanned($targetIp));
+
+        // Submit emergency unban with correct admin password
+        $response = $this->withServerVariables(['REMOTE_ADDR' => $targetIp])
+            ->post('/admin/emergency-unban', [
+                'password' => 'password123',
+            ]);
+
+        $response->assertRedirect(route('admin.dashboard'));
+        $this->assertAuthenticated();
+
+        // Verify IP is unbanned
+        $this->assertNull(IpBanService::isBanned($targetIp));
+
+        // Subsequent visits now 200 OK
+        $visit = $this->withServerVariables(['REMOTE_ADDR' => $targetIp])->get('/');
+        $visit->assertStatus(200);
     }
 }

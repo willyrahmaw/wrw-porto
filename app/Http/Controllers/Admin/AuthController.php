@@ -78,6 +78,35 @@ class AuthController extends Controller
     }
 
     /**
+     * Emergency unban for the portfolio owner if their IP was accidentally blacklisted.
+     */
+    public function emergencyUnban(Request $request): RedirectResponse
+    {
+        $request->validate([
+            'password' => ['required', 'string'],
+        ]);
+
+        $admin = \App\Models\User::query()->first();
+
+        if ($admin && \Illuminate\Support\Facades\Hash::check($request->input('password'), $admin->password)) {
+            $clientIp = $request->ip();
+            if ($clientIp) {
+                IpBanService::unban($clientIp);
+            }
+
+            Auth::login($admin);
+            $request->session()->regenerate();
+
+            Log::info("[FIREWALL] Emergency unban authorized by admin password for IP: {$clientIp}");
+
+            return redirect()->route('admin.dashboard')
+                ->with('success', "Alamat IP {$clientIp} berhasil dipulihkan dari firewall dan Anda telah berhasil masuk.");
+        }
+
+        return back()->with('unban_error', 'Kata sandi administrator salah. Buka blokir darurat ditolak.');
+    }
+
+    /**
      * Log out the admin user with session invalidation & token refresh (OWASP A07).
      */
     public function logout(Request $request): RedirectResponse

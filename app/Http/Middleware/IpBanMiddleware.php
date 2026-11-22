@@ -14,6 +14,16 @@ class IpBanMiddleware
      */
     public function handle(Request $request, Closure $next): Response
     {
+        // 1. Admin Immunity: Logged-in administrators are never blocked
+        if (auth()->check()) {
+            return $next($request);
+        }
+
+        // 2. Exemption: Always allow emergency recovery & admin login paths
+        if ($request->is('admin/emergency-unban') || $request->routeIs('admin.emergency-unban')) {
+            return $next($request);
+        }
+
         $clientIp = $request->ip();
 
         if ($clientIp && ($ban = IpBanService::isBanned($clientIp))) {

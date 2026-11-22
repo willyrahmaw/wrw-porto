@@ -35,9 +35,10 @@ Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
 // STUDIO COMMAND CENTER (ADMIN PANEL)
 // =========================================================================
 Route::prefix('admin')->name('admin.')->group(function () {
-    // Guest / Login Routes
+    // Guest / Login & Emergency Recovery Routes
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
     Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:6,1')->name('login.submit');
+    Route::post('/emergency-unban', [AuthController::class, 'emergencyUnban'])->middleware('throttle:5,1')->name('emergency-unban');
 
     // Authenticated Admin Routes
     Route::middleware('auth')->group(function () {

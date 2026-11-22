@@ -121,8 +121,39 @@
                 </button>
 
                 <div class="text-[11px] text-neutral-500 text-center sm:text-right">
-                    Jika Anda merasa ini adalah kesalahan sistem, hubungi administrator website.
+                    Jika Anda merasa ini adalah kesalahan sistem, gunakan kunci darurat di bawah.
                 </div>
+            </div>
+
+            {{-- Emergency Owner Recovery Box --}}
+            <div class="mt-8 pt-8 border-t border-[#2A1218] space-y-4">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <span class="text-xs uppercase tracking-widest text-[#EDEDE8] font-bold flex items-center gap-2">
+                        <span class="text-[#FF2A55]">✦</span> Anda Pemilik Website? (Emergency IP Unlock)
+                    </span>
+                    <span class="text-[11px] text-neutral-500 font-mono">Buka Blokir Instan dengan Password</span>
+                </div>
+
+                <form method="POST" action="{{ route('admin.emergency-unban') }}" class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                    @csrf
+                    <input
+                        type="password"
+                        name="password"
+                        placeholder="Masukkan password admin Anda..."
+                        required
+                        class="flex-1 px-4 py-3 bg-[#050304] border border-[#38161D] text-xs font-mono text-white placeholder-neutral-600 focus:outline-none focus:border-[#FF2A55]"
+                    >
+                    <button
+                        type="submit"
+                        class="px-6 py-3 bg-[#FF2A55] text-black font-mono text-xs font-bold uppercase tracking-wider hover:bg-white transition-colors cursor-pointer shrink-0"
+                    >
+                        Buka Blokir IP Ini →
+                    </button>
+                </form>
+
+                @if(session('unban_error'))
+                    <p class="text-xs text-[#FF2A55] font-mono">{{ session('unban_error') }}</p>
+                @endif
             </div>
 
         </div>
