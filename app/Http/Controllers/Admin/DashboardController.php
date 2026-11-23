@@ -41,7 +41,12 @@ class DashboardController extends Controller
         $testimonials = Testimonial::query()->orderBy('sort_order')->get();
         $messages = Message::query()->latest()->get();
         $unreadCount = $messages->where('is_read', false)->count();
-        $bannedIps = IpBan::query()->latest()->get();
+
+        try {
+            $bannedIps = IpBan::query()->latest()->get();
+        } catch (\Throwable $e) {
+            $bannedIps = collect();
+        }
 
         return view('admin.dashboard', compact(
             'profile',

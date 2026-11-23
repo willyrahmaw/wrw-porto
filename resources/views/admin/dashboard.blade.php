@@ -955,7 +955,7 @@
                                     ['value' => 98, 'suffix' => '%', 'label' => 'Skor Kecepatan Web'],
                                     ['value' => 24, 'suffix' => ' Jam', 'label' => 'Respon Support'],
                                 ];
-                                $currentStats = !empty($profile?->stats) ? $profile->stats : $defaultStats;
+                                $currentStats = $profile?->stats ?: $defaultStats;
                             @endphp
 
                             @foreach($currentStats as $idx => $st)

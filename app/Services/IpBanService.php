@@ -21,16 +21,19 @@ class IpBanService
      */
     public static function isBanned(string $ip): ?IpBan
     {
-        // Whitelist local development / loopback if needed, but allow testing
-        $cacheKey = self::cacheKey($ip);
+        try {
+            $cacheKey = self::cacheKey($ip);
 
-        // Check short-lived cache (30s) or query database
-        $record = Cache::remember($cacheKey, 20, function () use ($ip) {
-            return IpBan::query()->where('ip_address', $ip)->first();
-        });
+            // Check short-lived cache (20s) or query database defensively
+            $record = Cache::remember($cacheKey, 20, function () use ($ip) {
+                return IpBan::query()->where('ip_address', $ip)->first();
+            });
 
-        if ($record instanceof IpBan && $record->isActive()) {
-            return $record;
+            if ($record instanceof IpBan && $record->isActive()) {
+                return $record;
+            }
+        } catch (\Throwable $e) {
+            return null;
         }
 
         return null;

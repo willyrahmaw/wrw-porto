@@ -41,14 +41,23 @@ class AuthController extends Controller
         if (Auth::attempt($credentials, $request->boolean('remember'))) {
             // OWASP A07: Regenerate session ID upon privilege elevation (prevents session fixation)
             $request->session()->regenerate();
-            IpBanService::clearLoginFailures($request->ip());
 
-            Log::info('[Security Audit] Admin login successful', [
-                'user_id' => Auth::id(),
-                'email' => $credentials['email'],
-                'ip' => $request->ip(),
-                'user_agent' => $request->userAgent(),
-            ]);
+            try {
+                IpBanService::clearLoginFailures($request->ip());
+            } catch (\Throwable $e) {
+                // Defensive: prevent cache error from blocking login
+            }
+
+            try {
+                Log::info('[Security Audit] Admin login successful', [
+                    'user_id' => Auth::id(),
+                    'email' => $credentials['email'],
+                    'ip' => $request->ip(),
+                    'user_agent' => $request->userAgent(),
+                ]);
+            } catch (\Throwable $e) {
+                // Defensive: prevent log file write permission error from crashing login
+            }
 
             return redirect()->intended(route('admin.dashboard'))
                 ->with('success', 'Selamat datang kembali di Studio Command Center.');
