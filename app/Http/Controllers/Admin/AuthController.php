@@ -69,17 +69,23 @@ class AuthController extends Controller
             'user_agent' => $request->userAgent(),
         ]);
 
-        $failCount = IpBanService::recordLoginFailure($request->ip(), $request->userAgent());
-        if ($failCount >= 2) {
+        $failCount = 1;
+        try {
+            $failCount = IpBanService::recordLoginFailure($request->ip(), $request->userAgent());
+        } catch (\Throwable $e) {}
+
+        if ($failCount >= 5) {
             $ban = IpBanService::isBanned($request->ip());
-            return response()->view('errors.ip-banned', [
-                'ban' => $ban,
-                'ip' => $request->ip(),
-            ], 403);
+            if ($ban) {
+                return response()->view('errors.ip-banned', [
+                    'ban' => $ban,
+                    'ip' => $request->ip(),
+                ], 403);
+            }
         }
 
-        $remaining = 2 - $failCount;
-        $warningMsg = "Kata sandi salah. Peringatan: {$remaining} kesempatan lagi sebelum alamat IP Anda diblokir otomatis.";
+        $remaining = max(1, 5 - $failCount);
+        $warningMsg = "Kredensial login tidak cocok. Tersisa {$remaining} kesempatan lagi sebelum alamat IP diblokir otomatis.";
 
         return back()
             ->withInput($request->only('email'))

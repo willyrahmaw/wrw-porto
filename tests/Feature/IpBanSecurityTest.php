@@ -18,18 +18,20 @@ class IpBanSecurityTest extends TestCase
         $this->seed();
         $targetIp = '103.24.56.78';
 
-        // Attempt 1: Wrong password -> not yet banned
-        $res1 = $this->withServerVariables(['REMOTE_ADDR' => $targetIp])->post('/admin/login', [
-            'email' => 'admin@wrw.studio',
-            'password' => 'wrongpass1',
-        ]);
-        $res1->assertSessionHasErrors('email');
-        $this->assertNull(IpBanService::isBanned($targetIp));
+        // Attempts 1 to 4: Wrong password -> not yet banned
+        for ($i = 1; $i <= 4; $i++) {
+            $res = $this->withServerVariables(['REMOTE_ADDR' => $targetIp])->post('/admin/login', [
+                'email' => 'admin@wrw.studio',
+                'password' => 'wrongpass' . $i,
+            ]);
+            $res->assertSessionHasErrors('email');
+            $this->assertNull(IpBanService::isBanned($targetIp));
+        }
 
-        // Attempt 2: Wrong password again -> trigger Strike 1 ban (1 hour)
+        // Attempt 5: Wrong password again -> trigger Strike 1 ban (1 hour)
         $res2 = $this->withServerVariables(['REMOTE_ADDR' => $targetIp])->post('/admin/login', [
             'email' => 'admin@wrw.studio',
-            'password' => 'wrongpass2',
+            'password' => 'wrongpass5',
         ]);
         $res2->assertStatus(403);
         $res2->assertSee('IP RESTRICTED');

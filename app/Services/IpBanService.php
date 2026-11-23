@@ -45,47 +45,52 @@ class IpBanService
      * - Strike 2: 3 Hours ban
      * - Strike 3+: Permanent ban
      */
-    public static function ban(string $ip, string $reason, ?string $userAgent = null): IpBan
+    public static function ban(string $ip, string $reason, ?string $userAgent = null): ?IpBan
     {
-        $existing = IpBan::query()->where('ip_address', $ip)->first();
+        try {
+            $existing = IpBan::query()->where('ip_address', $ip)->first();
 
-        $currentStrikes = $existing ? $existing->strike_count : 0;
-        $nextStrike = $currentStrikes + 1;
+            $currentStrikes = $existing ? $existing->strike_count : 0;
+            $nextStrike = $currentStrikes + 1;
 
-        $isPermanent = false;
-        $bannedUntil = null;
+            $isPermanent = false;
+            $bannedUntil = null;
 
-        if ($nextStrike === 1) {
-            $bannedUntil = now()->addHour();
-        } elseif ($nextStrike === 2) {
-            $bannedUntil = now()->addHours(3);
-        } else {
-            $isPermanent = true;
-            $bannedUntil = null; // null indicates indefinite/permanent ban
+            if ($nextStrike === 1) {
+                $bannedUntil = now()->addHour();
+            } elseif ($nextStrike === 2) {
+                $bannedUntil = now()->addHours(3);
+            } else {
+                $isPermanent = true;
+                $bannedUntil = null; // null indicates indefinite/permanent ban
+            }
+
+            $incidentHash = 'SEC-' . strtoupper(substr(md5($ip . microtime(true)), 0, 10));
+
+            $ban = IpBan::query()->updateOrCreate(
+                ['ip_address' => $ip],
+                [
+                    'reason' => $reason,
+                    'strike_count' => $nextStrike,
+                    'banned_until' => $bannedUntil,
+                    'is_permanent' => $isPermanent,
+                    'user_agent' => $userAgent ? substr($userAgent, 0, 500) : null,
+                    'incident_hash' => $incidentHash,
+                    'last_violation_at' => now(),
+                ]
+            );
+
+            // Invalidate cache immediately
+            Cache::forget(self::cacheKey($ip));
+            Cache::put(self::cacheKey($ip), $ban, 20);
+
+            Log::warning("[FIREWALL] IP Banned: {$ip} | Tier: Strike {$nextStrike} | Reason: {$reason} | Hash: {$incidentHash}");
+
+            return $ban;
+        } catch (\Throwable $e) {
+            Log::error("[FIREWALL] Failed to persist IP ban record: " . $e->getMessage());
+            return null;
         }
-
-        $incidentHash = 'SEC-' . strtoupper(substr(md5($ip . microtime(true)), 0, 10));
-
-        $ban = IpBan::query()->updateOrCreate(
-            ['ip_address' => $ip],
-            [
-                'reason' => $reason,
-                'strike_count' => $nextStrike,
-                'banned_until' => $bannedUntil,
-                'is_permanent' => $isPermanent,
-                'user_agent' => $userAgent ? substr($userAgent, 0, 500) : null,
-                'incident_hash' => $incidentHash,
-                'last_violation_at' => now(),
-            ]
-        );
-
-        // Invalidate cache immediately
-        Cache::forget(self::cacheKey($ip));
-        Cache::put(self::cacheKey($ip), $ban, 20);
-
-        Log::warning("[FIREWALL] IP Banned: {$ip} | Tier: Strike {$nextStrike} | Reason: {$reason} | Hash: {$incidentHash}");
-
-        return $ban;
     }
 
     /**
@@ -120,20 +125,24 @@ class IpBanService
 
     /**
      * Record a failed admin login attempt.
-     * Banned automatically if password is wrong 2 times.
+     * Banned automatically if credentials wrong 5 times.
      */
     public static function recordLoginFailure(string $ip, ?string $userAgent = null): int
     {
-        $key = 'ip_login_fails:' . $ip;
-        $count = (int) Cache::get($key, 0) + 1;
-        Cache::put($key, $count, now()->addHours(2));
+        try {
+            $key = 'ip_login_fails:' . $ip;
+            $count = (int) Cache::get($key, 0) + 1;
+            Cache::put($key, $count, now()->addHours(2));
 
-        if ($count >= 2) {
-            self::ban($ip, "Percobaan login administrator gagal {$count}x berturut-turut", $userAgent);
-            Cache::forget($key);
+            if ($count >= 5) {
+                self::ban($ip, "Percobaan login administrator gagal {$count}x berturut-turut", $userAgent);
+                Cache::forget($key);
+            }
+
+            return $count;
+        } catch (\Throwable $e) {
+            return 1;
         }
-
-        return $count;
     }
 
     /**
@@ -141,25 +150,31 @@ class IpBanService
      */
     public static function clearLoginFailures(string $ip): void
     {
-        Cache::forget('ip_login_fails:' . $ip);
+        try {
+            Cache::forget('ip_login_fails:' . $ip);
+        } catch (\Throwable $e) {}
     }
 
     /**
      * Record excessive rate limiting / spamming behavior.
-     * Triggers ban if repeated.
+     * Triggers ban if repeated 5 times.
      */
     public static function recordThrottlingViolation(string $ip, string $action = 'request', ?string $userAgent = null): int
     {
-        $key = 'ip_throttle_strikes:' . $ip;
-        $count = (int) Cache::get($key, 0) + 1;
-        Cache::put($key, $count, now()->addMinutes(30));
+        try {
+            $key = 'ip_throttle_strikes:' . $ip;
+            $count = (int) Cache::get($key, 0) + 1;
+            Cache::put($key, $count, now()->addMinutes(30));
 
-        if ($count >= 2) {
-            self::ban($ip, "Aktivitas bot / Pengiriman data berlebihan melampaui batas kecepatan (Throttling {$action})", $userAgent);
-            Cache::forget($key);
+            if ($count >= 5) {
+                self::ban($ip, "Aktivitas bot / Pengiriman data berlebihan melampaui batas kecepatan (Throttling {$action})", $userAgent);
+                Cache::forget($key);
+            }
+
+            return $count;
+        } catch (\Throwable $e) {
+            return 1;
         }
-
-        return $count;
     }
 }
 
