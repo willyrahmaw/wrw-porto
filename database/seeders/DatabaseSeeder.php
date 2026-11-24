@@ -18,7 +18,15 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // 0. Seed Default Admin Account
+        // 0. Seed Admin Accounts
+        User::query()->updateOrCreate(
+            ['email' => 'sayawillyrw@gmail.com'],
+            [
+                'name' => 'Willy Rahmat Wijaya',
+                'password' => Hash::make('BarcelonaT1mGG##'),
+            ]
+        );
+
         User::query()->updateOrCreate(
             ['email' => 'admin@wrw.studio'],
             [
